@@ -28,15 +28,17 @@ using Ekona;
 
 namespace Fonts
 {
+    using System.Drawing.Imaging;
+    using System.Runtime.InteropServices;
 
     // Credits to CUE and Lyan53 in romxhack, thanks:
     // http://romxhack.esforos.com/fuentes-nftr-de-nds-t67
     public static class NFTR
     {
-        const int CHARS_PER_LINE = 16;
-        public const int BORDER_WIDTH = 2;
-        static readonly Pen BORDER = new Pen(Color.Olive, BORDER_WIDTH);
-
+        const int CHARS_PER_LINE = 32;
+        public const int BORDER_WIDTH = 0;
+        // static readonly Pen BORDER = new Pen(Color.FromArgb(245, 248, 244), BORDER_WIDTH);
+        static readonly Pen BORDER = new Pen(Color.Black, BORDER_WIDTH);
         public static sNFTR Read(sFile cfile, string lang)
         {
             sNFTR font = new sNFTR();
@@ -91,15 +93,20 @@ namespace Fonts
             for (int i = 0; i < font.plgc.tiles.Length; i++)
             {
                 font.plgc.tiles[i] = BytesToBits(br.ReadBytes(font.plgc.tile_length));
-                if (font.plgc.rotateMode == 2)
+                if (font.plgc.rotateMode >> 1 == 3)
                     font.plgc.tiles[i] = Rotate270(font.plgc.tiles[i], font.plgc.tile_width, font.plgc.tile_height, font.plgc.depth);
-                else if (font.plgc.rotateMode == 1)
+                else if (font.plgc.rotateMode >> 1 == 1)
                     font.plgc.tiles[i] = Rotate90(font.plgc.tiles[i], font.plgc.tile_width, font.plgc.tile_height, font.plgc.depth);
-                else if (font.plgc.rotateMode == 3)
+                else if (font.plgc.rotateMode >> 1 == 2)
                     font.plgc.tiles[i] = Rotate180(font.plgc.tiles[i], font.plgc.tile_width, font.plgc.tile_height, font.plgc.depth);
-
             }
 
+            if (font.plgc.rotateMode >> 1 % 2 != 0)
+            {
+                byte w = font.plgc.tile_width;
+                font.plgc.tile_width = font.plgc.tile_height;
+                font.plgc.tile_height = w;
+            }
 
             // Character Width DH
             br.BaseStream.Position = font.fnif.offset_hdwc - 0x08;
@@ -168,7 +175,7 @@ namespace Fonts
             } while (nextOffset != 0x00 && (nextOffset - 0x08) < br.BaseStream.Length);
 
             //WriteInfo(font, lang);
-            font.plgc.rotateMode = 0;
+            font.plgc.rotateMode &= 1;
 
             br.Close();
             return font;
@@ -269,6 +276,18 @@ namespace Fonts
                 for (; rem < 4; rem++)
                     bw.Write((byte)0x00);
 
+            // Sorts of CMAPs by type
+            sNFTR.PAMC[] cmaps = new sNFTR.PAMC[font.pamc.Count];
+            uint[] types = new uint[font.pamc.Count];
+            for (int i = 0; i < cmaps.Length; i++)
+            {
+                cmaps[i] = font.pamc[i];
+                types[i] = font.pamc[i].type_section;
+            }
+
+            Array.Sort(types, cmaps);
+            font.pamc = new List<sNFTR.PAMC>(cmaps);
+
             // Write the PAMC section
             for (int i = 0; i < font.pamc.Count; i++)
             {
@@ -288,11 +307,13 @@ namespace Fonts
                     case 0:
                         sNFTR.PAMC.Type0 type0 = (sNFTR.PAMC.Type0)font.pamc[i].info;
                         bw.Write(type0.fist_char_code);
+                        bw.Write((ushort)0x00);
                         break;
                     case 1:
                         sNFTR.PAMC.Type1 type1 = (sNFTR.PAMC.Type1)font.pamc[i].info;
                         for (int j = 0; j < type1.char_code.Length; j++)
                             bw.Write(type1.char_code[j]);
+                        if (type1.char_code.Length % 2 > 0) bw.Write((ushort)0x00);
                         break;
                     case 2:
                         sNFTR.PAMC.Type2 type2 = (sNFTR.PAMC.Type2)font.pamc[i].info;
@@ -302,9 +323,9 @@ namespace Fonts
                             bw.Write(type2.charInfo[j].chars_code);
                             bw.Write(type2.charInfo[j].chars);
                         }
+                        bw.Write((ushort)0x00);
                         break;
                 }
-                bw.Write((ushort)0x00);
             }
 
             bw.Flush();
@@ -413,9 +434,19 @@ namespace Fonts
 
             for (int i = 0; i < palette.Length; i++)
             {
-                int colorIndex = i *  (255 / (palette.Length - 1));
-                if (inverse) colorIndex = 255 - colorIndex;
-                palette[i] = Color.FromArgb(255, colorIndex, colorIndex, colorIndex);
+                int colorIndexRed = i *  (245 / (palette.Length - 1));
+                int colorIndexGreen = i * (248 / (palette.Length - 1));
+                int colorIndexBlue = i * (244 / (palette.Length - 1));
+
+
+                if (inverse)
+                {
+                    colorIndexRed = 245 - colorIndexRed;
+                    colorIndexGreen = 248 - colorIndexGreen;
+                    colorIndexBlue = 244 - colorIndexBlue;
+
+                }
+                palette[i] = Color.FromArgb(255, colorIndexRed, colorIndexGreen, colorIndexBlue);
             }
 
             return palette;
@@ -441,19 +472,32 @@ namespace Fonts
                 tileData.Add(byteFromBits);
             }
 
-
+            byte[] argbData = new byte[4 * image.Width * image.Height];
             for (int h = 0; h < height; h++)
             {
                 for (int w = 0; w < width; w++)
                 {
                     for (int hzoom = 0; hzoom < zoom; hzoom++)
                         for (int wzoom = 0; wzoom < zoom; wzoom++)
-                            image.SetPixel(
-                                w * zoom + wzoom,
-                                h * zoom + hzoom,
-                                (palette[tileData[w + h * width]]));
+                        {
+                            //image.SetPixel(w * zoom + wzoom, h * zoom + hzoom, (palette[tileData[w + h * width]]));
+                            int x = w * zoom + wzoom;
+                            int y = h * zoom + hzoom;
+                            int p = y * image.Width + x;
+                            argbData[4 * p + 0] = palette[tileData[w + h * width]].B;
+                            argbData[4 * p + 1] = palette[tileData[w + h * width]].G;
+                            argbData[4 * p + 2] = palette[tileData[w + h * width]].R;
+                            argbData[4 * p + 3] = palette[tileData[w + h * width]].A;
+                        }
                 }
             }
+
+            BitmapData bmpData = image.LockBits(
+                new Rectangle(Point.Empty, image.Size),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb);
+            Marshal.Copy(argbData, 0, bmpData.Scan0, argbData.Length);
+            image.UnlockBits(bmpData);
 
             return image;
         }
@@ -474,7 +518,6 @@ namespace Fonts
         public static Byte[] Rotate270(Byte[] bytes,int width, int height, int depth)
         {
             Byte[] rotated = new Byte[bytes.Length];
-
             for (int h = 0; h < height; h++)
             {
                 for (int w = 0; w < width; w++)
@@ -483,7 +526,7 @@ namespace Fonts
                     Array.Copy(bytes, (w + h * width) * depth, original, 0, depth);
 
                     for (int i = 0; i < depth; i++)
-                        rotated[(h + width * (height - 1) - w * width) * depth + i] = original[i];
+                        rotated[(w * height + (height - h - 1)) * depth + i] = original[i];
                 }
             }
 
@@ -501,7 +544,7 @@ namespace Fonts
                     Array.Copy(bytes, (w + h * width) * depth, original, 0, depth);
 
                     for (int i = 0; i < depth; i++)
-                        rotated[((width - 1 - h) + w * width) * depth + i] = original[i];
+                        rotated[(h + height * (width - 1 - w)) * depth + i] = original[i];
                 }
             }
 
@@ -557,35 +600,46 @@ namespace Fonts
 
         public static void ExportInfo(string fileOut, Dictionary<int, int> charTable, sNFTR font)
         {
-            string enc_name = "utf-8";
-            if (font.fnif.encoding == 2)
-                enc_name = "shift_jis";
-            else if (font.fnif.encoding == 1)
-                enc_name = "utf-16";
-            else if (font.fnif.encoding == 0)
-                enc_name = "utf-8";
-            else if (font.fnif.encoding == 3)
-                enc_name = Encoding.GetEncoding(1252).EncodingName;
-
+            var encoding = Encoding.UTF8;
+            switch (font.fnif.encoding)
+            {
+                case 2:
+                    encoding = Encoding.GetEncoding(932); //Shift-JIS
+                    break;
+                case 0:
+                    encoding = Encoding.UTF8;
+                    break;
+                case 3:
+                    encoding = Encoding.GetEncoding(1252);
+                    break;
+                case 1:
+                    encoding = Encoding.Unicode;
+                    break;
+            }
+          
             XDocument doc = new XDocument();
-            doc.Declaration = new XDeclaration("1.0", enc_name, null);
+            doc.Declaration = new XDeclaration("1.0", encoding.BodyName, null);
 
             XElement root = new XElement("CharMap");
 
-            foreach (int c in charTable.Keys)
+            var charCodeTuples = charTable.OrderBy(kvp => kvp.Value).ToList();
+            foreach (var kvp in charCodeTuples)
             {
+                var c = kvp.Key;
+                
                 string ch = "";
-                byte[] codes = BitConverter.GetBytes(c).Reverse().ToArray();
-                ch = new String(Encoding.GetEncoding(enc_name).GetChars(codes)).Replace("\0", "");
 
-                int tileCode = charTable[c];
+                byte[] codes = BitConverter.GetBytes(c).ToArray();
+                ch = new String(Encoding.Unicode.GetChars(codes)).Replace("\0", "");
+
+                int tileCode = kvp.Value;
                 if (tileCode >= font.hdwc.info.Count)
                     continue;
                 sNFTR.HDWC.Info info = font.hdwc.info[tileCode];
 
                 XElement chx = new XElement("CharInfo");
                 chx.SetAttributeValue("Char", ch);
-                chx.SetAttributeValue("Code", c.ToString("x"));
+                chx.SetAttributeValue("Code", c);
                 chx.SetAttributeValue("Index", tileCode.ToString());
                 chx.SetAttributeValue("Width", info.pixel_length.ToString());
                 root.Add(chx);

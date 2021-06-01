@@ -54,6 +54,7 @@ namespace Tinke
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditRomInfo));
             this.groupHeader = new System.Windows.Forms.GroupBox();
+            this.btnImportiheader = new System.Windows.Forms.Button();
             this.lblEncryptionSeed = new System.Windows.Forms.Label();
             this.numericEncryptionSeed = new System.Windows.Forms.NumericUpDown();
             this.lblDebugRamAddress = new System.Windows.Forms.Label();
@@ -113,6 +114,7 @@ namespace Tinke
             this.txtImage = new System.Windows.Forms.TextBox();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnImportAdata = new System.Windows.Forms.Button();
             this.groupHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericEncryptionSeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericDebugRamAddress)).BeginInit();
@@ -138,6 +140,7 @@ namespace Tinke
             // 
             // groupHeader
             // 
+            this.groupHeader.Controls.Add(this.btnImportiheader);
             this.groupHeader.Controls.Add(this.lblEncryptionSeed);
             this.groupHeader.Controls.Add(this.numericEncryptionSeed);
             this.groupHeader.Controls.Add(this.lblDebugRamAddress);
@@ -192,26 +195,37 @@ namespace Tinke
             this.groupHeader.TabStop = false;
             this.groupHeader.Text = "S03";
             // 
+            // btnImportiheader
+            // 
+            this.btnImportiheader.Enabled = false;
+            this.btnImportiheader.Location = new System.Drawing.Point(361, 366);
+            this.btnImportiheader.Name = "btnImportiheader";
+            this.btnImportiheader.Size = new System.Drawing.Size(169, 34);
+            this.btnImportiheader.TabIndex = 47;
+            this.btnImportiheader.Text = "S2E";
+            this.btnImportiheader.UseVisualStyleBackColor = true;
+            this.btnImportiheader.Click += new System.EventHandler(this.btnImportiheader_Click);
+            // 
             // lblEncryptionSeed
             // 
             this.lblEncryptionSeed.AutoSize = true;
             this.lblEncryptionSeed.Location = new System.Drawing.Point(295, 342);
             this.lblEncryptionSeed.Name = "lblEncryptionSeed";
-            this.lblEncryptionSeed.Size = new System.Drawing.Size(26, 13);
+            this.lblEncryptionSeed.Size = new System.Drawing.Size(23, 12);
             this.lblEncryptionSeed.TabIndex = 46;
             this.lblEncryptionSeed.Text = "S27";
             // 
             // numericEncryptionSeed
             // 
             this.numericEncryptionSeed.Hexadecimal = true;
-            this.numericEncryptionSeed.Location = new System.Drawing.Point(487, 340);
+            this.numericEncryptionSeed.Location = new System.Drawing.Point(497, 340);
             this.numericEncryptionSeed.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.numericEncryptionSeed.Name = "numericEncryptionSeed";
-            this.numericEncryptionSeed.Size = new System.Drawing.Size(100, 20);
+            this.numericEncryptionSeed.Size = new System.Drawing.Size(100, 21);
             this.numericEncryptionSeed.TabIndex = 45;
             this.numericEncryptionSeed.ValueChanged += new System.EventHandler(this.numericEncryptionSeed_ValueChanged);
             // 
@@ -220,21 +234,21 @@ namespace Tinke
             this.lblDebugRamAddress.AutoSize = true;
             this.lblDebugRamAddress.Location = new System.Drawing.Point(295, 317);
             this.lblDebugRamAddress.Name = "lblDebugRamAddress";
-            this.lblDebugRamAddress.Size = new System.Drawing.Size(26, 13);
+            this.lblDebugRamAddress.Size = new System.Drawing.Size(23, 12);
             this.lblDebugRamAddress.TabIndex = 44;
             this.lblDebugRamAddress.Text = "S25";
             // 
             // numericDebugRamAddress
             // 
             this.numericDebugRamAddress.Hexadecimal = true;
-            this.numericDebugRamAddress.Location = new System.Drawing.Point(487, 314);
+            this.numericDebugRamAddress.Location = new System.Drawing.Point(497, 314);
             this.numericDebugRamAddress.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericDebugRamAddress.Name = "numericDebugRamAddress";
-            this.numericDebugRamAddress.Size = new System.Drawing.Size(100, 20);
+            this.numericDebugRamAddress.Size = new System.Drawing.Size(100, 21);
             this.numericDebugRamAddress.TabIndex = 43;
             this.numericDebugRamAddress.ValueChanged += new System.EventHandler(this.numericDebugRamAddress_ValueChanged);
             // 
@@ -243,21 +257,21 @@ namespace Tinke
             this.lblDebugSize.AutoSize = true;
             this.lblDebugSize.Location = new System.Drawing.Point(295, 291);
             this.lblDebugSize.Name = "lblDebugSize";
-            this.lblDebugSize.Size = new System.Drawing.Size(26, 13);
+            this.lblDebugSize.Size = new System.Drawing.Size(23, 12);
             this.lblDebugSize.TabIndex = 42;
             this.lblDebugSize.Text = "S24";
             // 
             // numericDebugSize
             // 
             this.numericDebugSize.Hexadecimal = true;
-            this.numericDebugSize.Location = new System.Drawing.Point(487, 288);
+            this.numericDebugSize.Location = new System.Drawing.Point(497, 288);
             this.numericDebugSize.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericDebugSize.Name = "numericDebugSize";
-            this.numericDebugSize.Size = new System.Drawing.Size(100, 20);
+            this.numericDebugSize.Size = new System.Drawing.Size(100, 21);
             this.numericDebugSize.TabIndex = 41;
             this.numericDebugSize.ValueChanged += new System.EventHandler(this.numericDebugSize_ValueChanged);
             // 
@@ -266,21 +280,21 @@ namespace Tinke
             this.lblDebugRomOffset.AutoSize = true;
             this.lblDebugRomOffset.Location = new System.Drawing.Point(295, 265);
             this.lblDebugRomOffset.Name = "lblDebugRomOffset";
-            this.lblDebugRomOffset.Size = new System.Drawing.Size(26, 13);
+            this.lblDebugRomOffset.Size = new System.Drawing.Size(23, 12);
             this.lblDebugRomOffset.TabIndex = 40;
             this.lblDebugRomOffset.Text = "S23";
             // 
             // numericDebugRomOffset
             // 
             this.numericDebugRomOffset.Hexadecimal = true;
-            this.numericDebugRomOffset.Location = new System.Drawing.Point(487, 262);
+            this.numericDebugRomOffset.Location = new System.Drawing.Point(497, 262);
             this.numericDebugRomOffset.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericDebugRomOffset.Name = "numericDebugRomOffset";
-            this.numericDebugRomOffset.Size = new System.Drawing.Size(100, 20);
+            this.numericDebugRomOffset.Size = new System.Drawing.Size(100, 21);
             this.numericDebugRomOffset.TabIndex = 39;
             this.numericDebugRomOffset.ValueChanged += new System.EventHandler(this.numericDebugRomOffset_ValueChanged);
             // 
@@ -289,21 +303,21 @@ namespace Tinke
             this.lblArm7Autoload.AutoSize = true;
             this.lblArm7Autoload.Location = new System.Drawing.Point(297, 112);
             this.lblArm7Autoload.Name = "lblArm7Autoload";
-            this.lblArm7Autoload.Size = new System.Drawing.Size(26, 13);
+            this.lblArm7Autoload.Size = new System.Drawing.Size(23, 12);
             this.lblArm7Autoload.TabIndex = 38;
             this.lblArm7Autoload.Text = "S22";
             // 
             // numericArm7Autoload
             // 
             this.numericArm7Autoload.Hexadecimal = true;
-            this.numericArm7Autoload.Location = new System.Drawing.Point(487, 109);
+            this.numericArm7Autoload.Location = new System.Drawing.Point(497, 109);
             this.numericArm7Autoload.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericArm7Autoload.Name = "numericArm7Autoload";
-            this.numericArm7Autoload.Size = new System.Drawing.Size(100, 20);
+            this.numericArm7Autoload.Size = new System.Drawing.Size(100, 21);
             this.numericArm7Autoload.TabIndex = 37;
             this.numericArm7Autoload.ValueChanged += new System.EventHandler(this.numericArm7Autoload_ValueChanged);
             // 
@@ -312,21 +326,21 @@ namespace Tinke
             this.lblArm9Autoload.AutoSize = true;
             this.lblArm9Autoload.Location = new System.Drawing.Point(297, 86);
             this.lblArm9Autoload.Name = "lblArm9Autoload";
-            this.lblArm9Autoload.Size = new System.Drawing.Size(26, 13);
+            this.lblArm9Autoload.Size = new System.Drawing.Size(23, 12);
             this.lblArm9Autoload.TabIndex = 36;
             this.lblArm9Autoload.Text = "S21";
             // 
             // numericArm9Autoload
             // 
             this.numericArm9Autoload.Hexadecimal = true;
-            this.numericArm9Autoload.Location = new System.Drawing.Point(487, 83);
+            this.numericArm9Autoload.Location = new System.Drawing.Point(497, 84);
             this.numericArm9Autoload.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericArm9Autoload.Name = "numericArm9Autoload";
-            this.numericArm9Autoload.Size = new System.Drawing.Size(100, 20);
+            this.numericArm9Autoload.Size = new System.Drawing.Size(100, 21);
             this.numericArm9Autoload.TabIndex = 35;
             this.numericArm9Autoload.ValueChanged += new System.EventHandler(this.numericArm9Autoload_ValueChanged);
             // 
@@ -346,7 +360,7 @@ namespace Tinke
             this.lblReserved2.AutoSize = true;
             this.lblReserved2.Location = new System.Drawing.Point(296, 140);
             this.lblReserved2.Name = "lblReserved2";
-            this.lblReserved2.Size = new System.Drawing.Size(26, 13);
+            this.lblReserved2.Size = new System.Drawing.Size(23, 12);
             this.lblReserved2.TabIndex = 33;
             this.lblReserved2.Text = "S20";
             // 
@@ -355,21 +369,21 @@ namespace Tinke
             this.lblReserved3.AutoSize = true;
             this.lblReserved3.Location = new System.Drawing.Point(296, 237);
             this.lblReserved3.Name = "lblReserved3";
-            this.lblReserved3.Size = new System.Drawing.Size(26, 13);
+            this.lblReserved3.Size = new System.Drawing.Size(23, 12);
             this.lblReserved3.TabIndex = 32;
             this.lblReserved3.Text = "S1F";
             // 
             // numericReserved3
             // 
             this.numericReserved3.Hexadecimal = true;
-            this.numericReserved3.Location = new System.Drawing.Point(487, 234);
+            this.numericReserved3.Location = new System.Drawing.Point(497, 234);
             this.numericReserved3.Maximum = new decimal(new int[] {
             -1,
             0,
             0,
             0});
             this.numericReserved3.Name = "numericReserved3";
-            this.numericReserved3.Size = new System.Drawing.Size(100, 20);
+            this.numericReserved3.Size = new System.Drawing.Size(100, 21);
             this.numericReserved3.TabIndex = 31;
             this.numericReserved3.ValueChanged += new System.EventHandler(this.numericReserved3_ValueChanged);
             // 
@@ -378,21 +392,21 @@ namespace Tinke
             this.lblSecureDisable.AutoSize = true;
             this.lblSecureDisable.Location = new System.Drawing.Point(296, 60);
             this.lblSecureDisable.Name = "lblSecureDisable";
-            this.lblSecureDisable.Size = new System.Drawing.Size(27, 13);
+            this.lblSecureDisable.Size = new System.Drawing.Size(23, 12);
             this.lblSecureDisable.TabIndex = 30;
             this.lblSecureDisable.Text = "S1E";
             // 
             // numericSecureDisable
             // 
             this.numericSecureDisable.Hexadecimal = true;
-            this.numericSecureDisable.Location = new System.Drawing.Point(487, 57);
+            this.numericSecureDisable.Location = new System.Drawing.Point(497, 58);
             this.numericSecureDisable.Maximum = new decimal(new int[] {
             -1,
             2147483647,
             0,
             0});
             this.numericSecureDisable.Name = "numericSecureDisable";
-            this.numericSecureDisable.Size = new System.Drawing.Size(100, 20);
+            this.numericSecureDisable.Size = new System.Drawing.Size(100, 21);
             this.numericSecureDisable.TabIndex = 29;
             this.numericSecureDisable.ValueChanged += new System.EventHandler(this.numericSecureDisable_ValueChanged);
             // 
@@ -401,27 +415,27 @@ namespace Tinke
             this.lblRomTimeout.AutoSize = true;
             this.lblRomTimeout.Location = new System.Drawing.Point(296, 34);
             this.lblRomTimeout.Name = "lblRomTimeout";
-            this.lblRomTimeout.Size = new System.Drawing.Size(28, 13);
+            this.lblRomTimeout.Size = new System.Drawing.Size(23, 12);
             this.lblRomTimeout.TabIndex = 28;
             this.lblRomTimeout.Text = "S1D";
             // 
             // numericRomTimeout
             // 
             this.numericRomTimeout.Hexadecimal = true;
-            this.numericRomTimeout.Location = new System.Drawing.Point(487, 31);
+            this.numericRomTimeout.Location = new System.Drawing.Point(497, 31);
             this.numericRomTimeout.Maximum = new decimal(new int[] {
             65535,
             0,
             0,
             0});
             this.numericRomTimeout.Name = "numericRomTimeout";
-            this.numericRomTimeout.Size = new System.Drawing.Size(100, 20);
+            this.numericRomTimeout.Size = new System.Drawing.Size(100, 21);
             this.numericRomTimeout.TabIndex = 27;
             this.numericRomTimeout.ValueChanged += new System.EventHandler(this.numericRomTimeout_ValueChanged);
             // 
             // btnShowMakerCode
             // 
-            this.btnShowMakerCode.Location = new System.Drawing.Point(324, 408);
+            this.btnShowMakerCode.Location = new System.Drawing.Point(361, 406);
             this.btnShowMakerCode.Name = "btnShowMakerCode";
             this.btnShowMakerCode.Size = new System.Drawing.Size(169, 34);
             this.btnShowMakerCode.TabIndex = 26;
@@ -431,10 +445,9 @@ namespace Tinke
             // 
             // lblFlagsInit
             // 
-            this.lblFlagsInit.AutoSize = true;
             this.lblFlagsInit.Location = new System.Drawing.Point(6, 392);
             this.lblFlagsInit.Name = "lblFlagsInit";
-            this.lblFlagsInit.Size = new System.Drawing.Size(27, 13);
+            this.lblFlagsInit.Size = new System.Drawing.Size(150, 24);
             this.lblFlagsInit.TabIndex = 25;
             this.lblFlagsInit.Text = "S1B";
             // 
@@ -448,16 +461,15 @@ namespace Tinke
             0,
             0});
             this.numericFlagsInit.Name = "numericFlagsInit";
-            this.numericFlagsInit.Size = new System.Drawing.Size(100, 20);
+            this.numericFlagsInit.Size = new System.Drawing.Size(100, 21);
             this.numericFlagsInit.TabIndex = 24;
             this.numericFlagsInit.ValueChanged += new System.EventHandler(this.numericFlagsInit_ValueChanged);
             // 
             // lblFlagsRead
             // 
-            this.lblFlagsRead.AutoSize = true;
             this.lblFlagsRead.Location = new System.Drawing.Point(6, 366);
             this.lblFlagsRead.Name = "lblFlagsRead";
-            this.lblFlagsRead.Size = new System.Drawing.Size(27, 13);
+            this.lblFlagsRead.Size = new System.Drawing.Size(150, 24);
             this.lblFlagsRead.TabIndex = 23;
             this.lblFlagsRead.Text = "S1A";
             // 
@@ -471,7 +483,7 @@ namespace Tinke
             0,
             0});
             this.numericFlagsRead.Name = "numericFlagsRead";
-            this.numericFlagsRead.Size = new System.Drawing.Size(100, 20);
+            this.numericFlagsRead.Size = new System.Drawing.Size(100, 21);
             this.numericFlagsRead.TabIndex = 22;
             this.numericFlagsRead.ValueChanged += new System.EventHandler(this.numericFlagsRead_ValueChanged);
             // 
@@ -480,7 +492,7 @@ namespace Tinke
             this.lblArm7Ram.AutoSize = true;
             this.lblArm7Ram.Location = new System.Drawing.Point(6, 340);
             this.lblArm7Ram.Name = "lblArm7Ram";
-            this.lblArm7Ram.Size = new System.Drawing.Size(26, 13);
+            this.lblArm7Ram.Size = new System.Drawing.Size(23, 12);
             this.lblArm7Ram.TabIndex = 21;
             this.lblArm7Ram.Text = "S19";
             // 
@@ -494,7 +506,7 @@ namespace Tinke
             0,
             0});
             this.numericArm7Ram.Name = "numericArm7Ram";
-            this.numericArm7Ram.Size = new System.Drawing.Size(100, 20);
+            this.numericArm7Ram.Size = new System.Drawing.Size(100, 21);
             this.numericArm7Ram.TabIndex = 20;
             this.numericArm7Ram.ValueChanged += new System.EventHandler(this.numericArm7Ram_ValueChanged);
             // 
@@ -503,7 +515,7 @@ namespace Tinke
             this.lblArm7Entry.AutoSize = true;
             this.lblArm7Entry.Location = new System.Drawing.Point(6, 314);
             this.lblArm7Entry.Name = "lblArm7Entry";
-            this.lblArm7Entry.Size = new System.Drawing.Size(26, 13);
+            this.lblArm7Entry.Size = new System.Drawing.Size(23, 12);
             this.lblArm7Entry.TabIndex = 19;
             this.lblArm7Entry.Text = "S18";
             // 
@@ -517,7 +529,7 @@ namespace Tinke
             0,
             0});
             this.numericArm7Entry.Name = "numericArm7Entry";
-            this.numericArm7Entry.Size = new System.Drawing.Size(100, 20);
+            this.numericArm7Entry.Size = new System.Drawing.Size(100, 21);
             this.numericArm7Entry.TabIndex = 18;
             this.numericArm7Entry.ValueChanged += new System.EventHandler(this.numericArm7Entry_ValueChanged);
             // 
@@ -526,7 +538,7 @@ namespace Tinke
             this.lblArm9Ram.AutoSize = true;
             this.lblArm9Ram.Location = new System.Drawing.Point(6, 288);
             this.lblArm9Ram.Name = "lblArm9Ram";
-            this.lblArm9Ram.Size = new System.Drawing.Size(26, 13);
+            this.lblArm9Ram.Size = new System.Drawing.Size(23, 12);
             this.lblArm9Ram.TabIndex = 17;
             this.lblArm9Ram.Text = "S17";
             // 
@@ -540,7 +552,7 @@ namespace Tinke
             0,
             0});
             this.numericArm9Ram.Name = "numericArm9Ram";
-            this.numericArm9Ram.Size = new System.Drawing.Size(100, 20);
+            this.numericArm9Ram.Size = new System.Drawing.Size(100, 21);
             this.numericArm9Ram.TabIndex = 16;
             this.numericArm9Ram.ValueChanged += new System.EventHandler(this.numericArm9Ram_ValueChanged);
             // 
@@ -549,7 +561,7 @@ namespace Tinke
             this.lblArm9Entry.AutoSize = true;
             this.lblArm9Entry.Location = new System.Drawing.Point(6, 262);
             this.lblArm9Entry.Name = "lblArm9Entry";
-            this.lblArm9Entry.Size = new System.Drawing.Size(26, 13);
+            this.lblArm9Entry.Size = new System.Drawing.Size(23, 12);
             this.lblArm9Entry.TabIndex = 15;
             this.lblArm9Entry.Text = "S16";
             // 
@@ -563,7 +575,7 @@ namespace Tinke
             0,
             0});
             this.numericArm9Entry.Name = "numericArm9Entry";
-            this.numericArm9Entry.Size = new System.Drawing.Size(100, 20);
+            this.numericArm9Entry.Size = new System.Drawing.Size(100, 21);
             this.numericArm9Entry.TabIndex = 14;
             this.numericArm9Entry.ValueChanged += new System.EventHandler(this.numericArm9Entry_ValueChanged);
             // 
@@ -572,7 +584,7 @@ namespace Tinke
             this.lblInternalFlag.AutoSize = true;
             this.lblInternalFlag.Location = new System.Drawing.Point(6, 236);
             this.lblInternalFlag.Name = "lblInternalFlag";
-            this.lblInternalFlag.Size = new System.Drawing.Size(26, 13);
+            this.lblInternalFlag.Size = new System.Drawing.Size(23, 12);
             this.lblInternalFlag.TabIndex = 13;
             this.lblInternalFlag.Text = "S15";
             // 
@@ -586,7 +598,7 @@ namespace Tinke
             0,
             0});
             this.numericInternalFlag.Name = "numericInternalFlag";
-            this.numericInternalFlag.Size = new System.Drawing.Size(100, 20);
+            this.numericInternalFlag.Size = new System.Drawing.Size(100, 21);
             this.numericInternalFlag.TabIndex = 12;
             this.numericInternalFlag.ValueChanged += new System.EventHandler(this.numericInternalFlag_ValueChanged);
             // 
@@ -600,7 +612,7 @@ namespace Tinke
             0,
             0});
             this.numericROMVer.Name = "numericROMVer";
-            this.numericROMVer.Size = new System.Drawing.Size(100, 20);
+            this.numericROMVer.Size = new System.Drawing.Size(100, 21);
             this.numericROMVer.TabIndex = 11;
             this.numericROMVer.ValueChanged += new System.EventHandler(this.numericROMVer_ValueChanged);
             // 
@@ -609,7 +621,7 @@ namespace Tinke
             this.lblROMVer.AutoSize = true;
             this.lblROMVer.Location = new System.Drawing.Point(6, 209);
             this.lblROMVer.Name = "lblROMVer";
-            this.lblROMVer.Size = new System.Drawing.Size(26, 13);
+            this.lblROMVer.Size = new System.Drawing.Size(23, 12);
             this.lblROMVer.TabIndex = 10;
             this.lblROMVer.Text = "S14";
             // 
@@ -629,7 +641,7 @@ namespace Tinke
             this.lblReserved.AutoSize = true;
             this.lblReserved.Location = new System.Drawing.Point(6, 139);
             this.lblReserved.Name = "lblReserved";
-            this.lblReserved.Size = new System.Drawing.Size(26, 13);
+            this.lblReserved.Size = new System.Drawing.Size(23, 12);
             this.lblReserved.TabIndex = 8;
             this.lblReserved.Text = "S13";
             // 
@@ -638,7 +650,7 @@ namespace Tinke
             this.lblUnitCode.AutoSize = true;
             this.lblUnitCode.Location = new System.Drawing.Point(6, 111);
             this.lblUnitCode.Name = "lblUnitCode";
-            this.lblUnitCode.Size = new System.Drawing.Size(26, 13);
+            this.lblUnitCode.Size = new System.Drawing.Size(23, 12);
             this.lblUnitCode.TabIndex = 7;
             this.lblUnitCode.Text = "S12";
             // 
@@ -652,7 +664,7 @@ namespace Tinke
             0,
             0});
             this.numericUnitCode.Name = "numericUnitCode";
-            this.numericUnitCode.Size = new System.Drawing.Size(100, 20);
+            this.numericUnitCode.Size = new System.Drawing.Size(100, 21);
             this.numericUnitCode.TabIndex = 6;
             this.numericUnitCode.ValueChanged += new System.EventHandler(this.numericUnitCode_ValueChanged);
             // 
@@ -661,7 +673,7 @@ namespace Tinke
             this.lblMakerCode.AutoSize = true;
             this.lblMakerCode.Location = new System.Drawing.Point(6, 86);
             this.lblMakerCode.Name = "lblMakerCode";
-            this.lblMakerCode.Size = new System.Drawing.Size(26, 13);
+            this.lblMakerCode.Size = new System.Drawing.Size(23, 12);
             this.lblMakerCode.TabIndex = 5;
             this.lblMakerCode.Text = "S11";
             // 
@@ -671,7 +683,7 @@ namespace Tinke
             this.txtMakerCode.Location = new System.Drawing.Point(190, 85);
             this.txtMakerCode.MaxLength = 2;
             this.txtMakerCode.Name = "txtMakerCode";
-            this.txtMakerCode.Size = new System.Drawing.Size(100, 20);
+            this.txtMakerCode.Size = new System.Drawing.Size(100, 21);
             this.txtMakerCode.TabIndex = 4;
             this.txtMakerCode.TextChanged += new System.EventHandler(this.txtMakerCode_TextChanged);
             // 
@@ -680,7 +692,7 @@ namespace Tinke
             this.lblGameCode.AutoSize = true;
             this.lblGameCode.Location = new System.Drawing.Point(6, 60);
             this.lblGameCode.Name = "lblGameCode";
-            this.lblGameCode.Size = new System.Drawing.Size(26, 13);
+            this.lblGameCode.Size = new System.Drawing.Size(23, 12);
             this.lblGameCode.TabIndex = 3;
             this.lblGameCode.Text = "S10";
             // 
@@ -690,7 +702,7 @@ namespace Tinke
             this.txtGameCode.Location = new System.Drawing.Point(190, 59);
             this.txtGameCode.MaxLength = 4;
             this.txtGameCode.Name = "txtGameCode";
-            this.txtGameCode.Size = new System.Drawing.Size(100, 20);
+            this.txtGameCode.Size = new System.Drawing.Size(100, 21);
             this.txtGameCode.TabIndex = 2;
             this.txtGameCode.TextChanged += new System.EventHandler(this.txtGameCode_TextChanged);
             // 
@@ -700,7 +712,7 @@ namespace Tinke
             this.txtGameTitle.Location = new System.Drawing.Point(190, 32);
             this.txtGameTitle.MaxLength = 12;
             this.txtGameTitle.Name = "txtGameTitle";
-            this.txtGameTitle.Size = new System.Drawing.Size(100, 20);
+            this.txtGameTitle.Size = new System.Drawing.Size(100, 21);
             this.txtGameTitle.TabIndex = 1;
             this.txtGameTitle.TextChanged += new System.EventHandler(this.txtGameTitle_TextChanged);
             // 
@@ -709,7 +721,7 @@ namespace Tinke
             this.lblGameTitle.AutoSize = true;
             this.lblGameTitle.Location = new System.Drawing.Point(6, 33);
             this.lblGameTitle.Name = "lblGameTitle";
-            this.lblGameTitle.Size = new System.Drawing.Size(26, 13);
+            this.lblGameTitle.Size = new System.Drawing.Size(23, 12);
             this.lblGameTitle.TabIndex = 0;
             this.lblGameTitle.Text = "S0F";
             // 
@@ -726,7 +738,7 @@ namespace Tinke
             this.groupBanner.Controls.Add(this.txtImage);
             this.groupBanner.Location = new System.Drawing.Point(610, 12);
             this.groupBanner.Name = "groupBanner";
-            this.groupBanner.Size = new System.Drawing.Size(198, 337);
+            this.groupBanner.Size = new System.Drawing.Size(199, 372);
             this.groupBanner.TabIndex = 3;
             this.groupBanner.TabStop = false;
             this.groupBanner.Text = "S04";
@@ -741,36 +753,36 @@ namespace Tinke
             0,
             0});
             this.numericBanVer.Name = "numericBanVer";
-            this.numericBanVer.Size = new System.Drawing.Size(84, 20);
+            this.numericBanVer.Size = new System.Drawing.Size(84, 21);
             this.numericBanVer.TabIndex = 9;
             // 
             // txtBanReserved
             // 
             this.txtBanReserved.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.txtBanReserved.Location = new System.Drawing.Point(9, 252);
+            this.txtBanReserved.Location = new System.Drawing.Point(9, 318);
             this.txtBanReserved.MaxLength = 83;
             this.txtBanReserved.Multiline = true;
             this.txtBanReserved.Name = "txtBanReserved";
-            this.txtBanReserved.Size = new System.Drawing.Size(171, 75);
+            this.txtBanReserved.Size = new System.Drawing.Size(171, 48);
             this.txtBanReserved.TabIndex = 8;
             this.txtBanReserved.Leave += new System.EventHandler(this.txtBanReserved_Leave);
             // 
             // txtTitles
             // 
             this.txtTitles.Location = new System.Drawing.Point(9, 159);
-            this.txtTitles.MaxLength = 50;
+            this.txtTitles.MaxLength = 128;
             this.txtTitles.Multiline = true;
             this.txtTitles.Name = "txtTitles";
-            this.txtTitles.Size = new System.Drawing.Size(171, 62);
+            this.txtTitles.Size = new System.Drawing.Size(171, 141);
             this.txtTitles.TabIndex = 7;
             this.txtTitles.TextChanged += new System.EventHandler(this.txtTitles_TextChanged);
             // 
             // lblBanReserved
             // 
             this.lblBanReserved.AutoSize = true;
-            this.lblBanReserved.Location = new System.Drawing.Point(6, 236);
+            this.lblBanReserved.Location = new System.Drawing.Point(7, 303);
             this.lblBanReserved.Name = "lblBanReserved";
-            this.lblBanReserved.Size = new System.Drawing.Size(27, 13);
+            this.lblBanReserved.Size = new System.Drawing.Size(23, 12);
             this.lblBanReserved.TabIndex = 6;
             this.lblBanReserved.Text = "S0E";
             // 
@@ -779,7 +791,7 @@ namespace Tinke
             this.lblBanTitles.AutoSize = true;
             this.lblBanTitles.Location = new System.Drawing.Point(6, 115);
             this.lblBanTitles.Name = "lblBanTitles";
-            this.lblBanTitles.Size = new System.Drawing.Size(26, 13);
+            this.lblBanTitles.Size = new System.Drawing.Size(23, 12);
             this.lblBanTitles.TabIndex = 5;
             this.lblBanTitles.Text = "S07";
             // 
@@ -798,7 +810,7 @@ namespace Tinke
             "S0D"});
             this.comboBanTitles.Location = new System.Drawing.Point(9, 131);
             this.comboBanTitles.Name = "comboBanTitles";
-            this.comboBanTitles.Size = new System.Drawing.Size(171, 21);
+            this.comboBanTitles.Size = new System.Drawing.Size(171, 20);
             this.comboBanTitles.TabIndex = 4;
             this.comboBanTitles.SelectedIndexChanged += new System.EventHandler(this.comboBanTitles_SelectedIndexChanged);
             // 
@@ -807,7 +819,7 @@ namespace Tinke
             this.lblBanVer.AutoSize = true;
             this.lblBanVer.Location = new System.Drawing.Point(6, 85);
             this.lblBanVer.Name = "lblBanVer";
-            this.lblBanVer.Size = new System.Drawing.Size(26, 13);
+            this.lblBanVer.Size = new System.Drawing.Size(23, 12);
             this.lblBanVer.TabIndex = 2;
             this.lblBanVer.Text = "S06";
             // 
@@ -828,7 +840,7 @@ namespace Tinke
             this.txtImage.Location = new System.Drawing.Point(6, 33);
             this.txtImage.Name = "txtImage";
             this.txtImage.ReadOnly = true;
-            this.txtImage.Size = new System.Drawing.Size(83, 20);
+            this.txtImage.Size = new System.Drawing.Size(83, 21);
             this.txtImage.TabIndex = 0;
             // 
             // btnSave
@@ -857,11 +869,27 @@ namespace Tinke
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // btnImportAdata
+            // 
+            this.btnImportAdata.Enabled = false;
+            this.btnImportAdata.Image = global::Tinke.Properties.Resources.plugin_go;
+            this.btnImportAdata.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnImportAdata.Location = new System.Drawing.Point(610, 394);
+            this.btnImportAdata.Name = "btnImportAdata";
+            this.btnImportAdata.Size = new System.Drawing.Size(187, 30);
+            this.btnImportAdata.TabIndex = 47;
+            this.btnImportAdata.Text = "S2D";
+            this.btnImportAdata.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnImportAdata.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnImportAdata.UseVisualStyleBackColor = true;
+            this.btnImportAdata.Click += new System.EventHandler(this.btnImportAdata_Click);
+            // 
             // EditRomInfo
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.ClientSize = new System.Drawing.Size(808, 472);
+            this.ClientSize = new System.Drawing.Size(811, 472);
+            this.Controls.Add(this.btnImportAdata);
             this.Controls.Add(this.groupBanner);
             this.Controls.Add(this.groupHeader);
             this.Controls.Add(this.btnCancel);
@@ -960,5 +988,7 @@ namespace Tinke
         private System.Windows.Forms.NumericUpDown numericDebugRamAddress;
         private System.Windows.Forms.Label lblEncryptionSeed;
         private System.Windows.Forms.NumericUpDown numericEncryptionSeed;
+        private System.Windows.Forms.Button btnImportAdata;
+        private System.Windows.Forms.Button btnImportiheader;
     }
 }

@@ -19,8 +19,8 @@
  */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+//using System.ComponentModel;
+//using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -32,9 +32,15 @@ using Ekona;
 
 namespace Tinke
 {
+    using System.Security.Cryptography;
+
+    using Tinke.Nitro;
+
     public partial class Sistema : Form
     {
         RomInfo romInfo;
+        SecureArea secureArea;
+        TWL twl;
         Debug debug;
 
         Acciones accion;
@@ -44,14 +50,16 @@ namespace Tinke
         bool isMono;
         Keys keyDown;
         bool stop;
+        Espera espera;
+        public static bool twl_flag;
 
         public Sistema()
         {
             InitializeComponent();
-            this.Text = "Tinke " + Application.ProductVersion + " - romhacking by pleoNeX";
+            this.Text = "TinkeDSi " + Application.ProductVersion + " - by pleoNeX&MetLob&R-YaTian";
 
             // The IE control of the Debug windows doesn't work in Mono
-            isMono = (Type.GetType("Mono.Runtime") != null) ? true : false;
+            isMono = (Type.GetType("Mono.Runtime") != null);
 
             sb = new StringBuilder();
             TextWriter tw = new StringWriter(sb);
@@ -68,7 +76,7 @@ namespace Tinke
                                  "\n    <InstantSearch>True</InstantSearch>" +
                                  "\n    <WindowDebug>True</WindowDebug>" +
                                  "\n    <WindowInformation>True</WindowInformation>" +
-                                 "\n    <ModeWindow>False</ModeWindow>" +
+                                 //"\n    <ModeWindow>False</ModeWindow>" +
                                  "\n  </Options>\n</Tinke>",
                                  Encoding.UTF8);
             }
@@ -78,12 +86,12 @@ namespace Tinke
                 if (!langFile.EndsWith(".xml"))
                     continue; ;
 
-                string flag = Application.StartupPath + Path.DirectorySeparatorChar + "langs" + Path.DirectorySeparatorChar + langFile.Substring(langFile.Length - 9, 5) + ".png";
-                Image iFlag;
-                if (File.Exists(flag))
-                    iFlag = Image.FromFile(flag);
-                else
-                    iFlag = iconos.Images[1];
+                //string flag = Application.StartupPath + Path.DirectorySeparatorChar + "langs" + Path.DirectorySeparatorChar + langFile.Substring(langFile.Length - 9, 5) + ".png";
+                //Image iFlag;
+                //if (File.Exists(flag))
+                    //iFlag = Image.FromFile(flag);
+                //else
+                    //iFlag = iconos.Images[1];
 
                 XElement xLang = XElement.Load(langFile);
                 if (xLang.Name != "Language")
@@ -91,7 +99,7 @@ namespace Tinke
 
                 toolStripLanguage.DropDownItems.Add(
                     xLang.Attribute("name").Value,
-                    iFlag,
+                    null,
                     ToolStripLang_Click);
             }
 
@@ -102,6 +110,8 @@ namespace Tinke
             treeSystem.GotFocus += new EventHandler(treeSystem_LostFocus);
             keyDown = Keys.Escape;
         }
+
+        #region Form Events
         void Sistema_Load(object sender, EventArgs e)
         {
             string[] filesToRead = new string[1];
@@ -142,9 +152,12 @@ namespace Tinke
                 Array.Copy(Environment.GetCommandLineArgs(), 1, filesToRead, 0, filesToRead.Length);
             }
 
-            Thread espera = new System.Threading.Thread(ThreadEspera);
+            Thread loadrom = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
             if (!isMono)
-                espera.Start("S02");
+                loadrom.Start("S02");
 
             if (filesToRead.Length == 1 &&
                 (Path.GetFileName(filesToRead[0]).ToUpper().EndsWith(".NDS") || Path.GetFileName(filesToRead[0]).ToUpper().EndsWith(".SRL")))
@@ -156,8 +169,7 @@ namespace Tinke
 
             if (!isMono)
             {
-                espera.Abort();
-
+                espera.Close();
                 debug = new Debug();
                 debug.FormClosing += new FormClosingEventHandler(debug_FormClosing);
                 debug.Add_Text(sb.ToString());
@@ -182,7 +194,7 @@ namespace Tinke
                 xml.Element("WindowDebug").Value = toolStripDebug.Checked.ToString();
                 xml.Element("WindowInformation").Value = toolStripInfoRom.Checked.ToString();
                 xml.Element("InstantSearch").Value = checkSearch.Checked.ToString();
-                xml.Element("ModeWindow").Value = toolStripVentana.Checked.ToString();
+               //xml.Element("ModeWindow").Value = toolStripVentana.Checked.ToString();
 
                 xml = xml.Parent;
                 xml.Save(Application.StartupPath + Path.DirectorySeparatorChar + "Tinke.xml");
@@ -203,12 +215,15 @@ namespace Tinke
                 accion.Dispose();
             }
         }
+        #endregion
 
+        #region Initialization
         private void ReadGame(string file)
         {
             DateTime startTime = DateTime.Now;
 
             romInfo = new RomInfo(file);  // Read the header and banner
+            secureArea = new SecureArea(file); // Read and Decrypt ARM9 Secure Area
             DateTime t1 = DateTime.Now;
             accion = new Acciones(file, new String(romInfo.Cabecera.gameCode));
             DateTime t2 = DateTime.Now;
@@ -224,6 +239,28 @@ namespace Tinke
             accion.LastFileID = fat.Length;
             accion.LastFolderID = root.id + 0xF000;
             root.id = 0xF000;
+
+            // Read DSi stuff
+            if ((romInfo.Cabecera.unitCode & 2) > 0 && (romInfo.Cabecera.twlInternalFlags & 1) > 0)
+            {
+                //Console.WriteLine("twlInternalFlags");
+                // Read TWL rom data if the DSi ROM is valid 
+                if (romInfo.Cabecera.tid_high != 0 && romInfo.Cabecera.tid_high != 0xFFFFFFFF)
+                {
+                    //Console.WriteLine("twlInternalFlags1");
+                    // NOTE: Some DSi Enhanced ROMs is invalid!
+                    try
+                    {
+                        this.twl = new TWL(file, this.romInfo.Cabecera, fat);
+                    }
+                    catch { }
+                    if (twl != null)
+                    {
+                        twl_flag = true;
+                        romInfo.Refresh_flag();
+                    }
+                }
+            }
 
             // Add system files (fnt.bin, banner.bin, overlays, arm9 and arm7)
             if (!(root.folders is List<sFolder>))
@@ -266,6 +303,7 @@ namespace Tinke
             this.Text += "          " + new String(romInfo.Cabecera.gameTitle).Replace("\0", "") +
                 " (" + new String(romInfo.Cabecera.gameCode) + ')';
         }
+
         private sFolder Add_SystemFiles(Nitro.Estructuras.sFAT[] fatTable)
         {
             sFolder ftc = new sFolder();
@@ -308,7 +346,7 @@ namespace Tinke
             sFile banner = new sFile();
             banner.name = "banner.bin";
             banner.offset = romInfo.Cabecera.bannerOffset;
-            banner.size = 0x840;
+            banner.size = romInfo.Banner.GetDefSize(romInfo.Cabecera.banner_size);
             banner.path = accion.ROMFile;
             banner.id = (ushort)accion.LastFileID;
             accion.LastFileID++;
@@ -356,9 +394,40 @@ namespace Tinke
                 ftc.files.Add(y7);
             }
 
+            // Add DSi ARM9/7 files
+            if ((romInfo.Cabecera.unitCode & 2) > 0 && this.twl != null)
+            {
+                if (romInfo.Cabecera.dsi9_size > 0 && (int)romInfo.Cabecera.dsi9_size != -1)
+                {
+                    sFile arm9i = new sFile();
+                    arm9i.name = "arm9i.bin";
+                    arm9i.offset = 0;// romInfo.Cabecera.dsi9_rom_offset;
+                    arm9i.size = romInfo.Cabecera.dsi9_size;
+                    arm9i.path = accion.Get_TempFolder() + Path.DirectorySeparatorChar + arm9i.name;
+                    arm9i.id = (ushort)accion.LastFileID;
+                    accion.LastFileID++;
+                    ftc.files.Add(arm9i);
+                    File.WriteAllBytes(arm9i.path, this.twl.DSi9Data);
+                }
+
+                if (romInfo.Cabecera.dsi7_size > 0 && (int)romInfo.Cabecera.dsi7_size != -1)
+                {
+                    sFile arm7i = new sFile();
+                    arm7i.name = "arm7i.bin";
+                    arm7i.offset = 0;// romInfo.Cabecera.dsi7_rom_offset;
+                    arm7i.size = romInfo.Cabecera.dsi7_size;
+                    arm7i.path = accion.Get_TempFolder() + Path.DirectorySeparatorChar + arm7i.name;
+                    arm7i.id = (ushort)accion.LastFileID;
+                    accion.LastFileID++;
+                    ftc.files.Add(arm7i);
+                    File.WriteAllBytes(arm7i.path, this.twl.DSi7Data);
+                }
+            }
+
             Set_Format(ftc);
             return ftc;
         }
+
         private void ReadFiles(string[] files)
         {
             toolStripInfoRom.Enabled = false;
@@ -416,6 +485,7 @@ namespace Tinke
             Console.WriteLine("<li>" + xml.Element("S19").Value + (t6 - t5).ToString() + "</li>");
             Console.Write("</font></ul><br>");
         }
+
         private void ReadFolder(string folder)
         {
             toolStripInfoRom.Enabled = false;
@@ -486,11 +556,12 @@ namespace Tinke
                 }
                 if (xml.Element("InstantSearch").Value == "True")
                     checkSearch.Checked = true;
-                if (xml.Element("ModeWindow").Value == "True")
-                    toolStripVentana.Checked = true;
+                //if (xml.Element("ModeWindow").Value == "True")
+                    //toolStripVentana.Checked = true;
             }
             catch { MessageBox.Show(Tools.Helper.GetTranslation("Sistema", "S38"), Tools.Helper.GetTranslation("Sistema", "S3A")); }
         }
+
         private void ReadLanguage()
         {
             try
@@ -500,7 +571,7 @@ namespace Tinke
                 toolStripOpen.Text = xml.Element("S01").Value;
                 toolStripInfoRom.Text = xml.Element("S02").Value;
                 toolStripDebug.Text = xml.Element("S03").Value;
-                toolStripVentana.Text = xml.Element("S04").Value;
+                //toolStripVentana.Text = xml.Element("S04").Value;
                 //toolStripPlugin.Text = xml.Element("S05").Value;
                 //recargarPluginsToolStripMenuItem.Text = xml.Element("S06").Value;
                 toolStripLanguage.Text = xml.Element("S1E").Value;
@@ -531,6 +602,7 @@ namespace Tinke
                 btnHex.Text = xml.Element("S1D").Value;
                 label1.Text = xml.Element("S2D").Value;
                 checkSearch.Text = xml.Element("S2E").Value;
+                label1.Text = xml.Element("S2F").Value;
                 toolTipSearch.ToolTipTitle = xml.Element("S2F").Value;
 
                 toolTipSearch.SetToolTip(txtSearch,
@@ -558,11 +630,71 @@ namespace Tinke
                 toolStripAbrirFat.Text = xml.Element("S3D").Value;
                 btnPack.Text = xml.Element("S42").Value;
                 stripRefreshMsg.Text = xml.Element("S45").Value;
+                btnImport1.Text = xml.Element("S46").Value;
             }
             catch { throw new NotSupportedException("There was an error reading the language file"); }
         }
 
+        private void Set_Format(sFolder folder)
+        {
+            if (folder.files is List<sFile>)
+            {
+                for (int i = 0; i < folder.files.Count; i++)
+                {
+                    sFile newFile = folder.files[i];
+                    newFile.format = accion.Get_Format(newFile);
+                    folder.files[i] = newFile;
+                }
+            }
 
+            if (folder.folders is List<sFolder>)
+                foreach (sFolder subFolder in folder.folders)
+                    Set_Format(subFolder);
+        }
+
+        private void Get_SupportedFiles()
+        {
+            filesSupported = nFiles = 0; // Reiniciamos el contador
+
+            Recursive_SupportedFiles(accion.Root);
+            if (nFiles == 0)
+                nFiles = 1;
+
+            lblSupport.Text = Tools.Helper.GetTranslation("Sistema", "S30") + ' ' + (filesSupported * 100 / nFiles) + '%';
+            if ((filesSupported * 100 / nFiles) >= 75)
+                lblSupport.Font = new Font("Consolas", 10, FontStyle.Bold | FontStyle.Underline);
+            else
+                lblSupport.Font = new Font("Consolas", 10, FontStyle.Regular);
+        }
+
+        private void Recursive_SupportedFiles(sFolder folder)
+        {
+            if (folder.files is List<sFile>)
+            {
+                foreach (sFile archivo in folder.files)
+                {
+                    if (archivo.format == Format.System || archivo.size == 0x00)
+                        continue;
+
+                    if (archivo.format != Format.Unknown)
+                        filesSupported++;
+                    nFiles++;
+                }
+            }
+
+            if (folder.folders is List<sFolder>)
+                foreach (sFolder subFolder in folder.folders)
+                    Recursive_SupportedFiles(subFolder);
+        }
+
+        private void ThreadEspera(Object name)
+        {
+            espera = new Espera((string)name, false);
+            espera.ShowDialog();
+        }
+        #endregion
+
+        #region Create Nodes
         private TreeNode Create_Nodes(sFolder currFolder)
         {
             TreeNode currNode = new TreeNode();
@@ -605,6 +737,7 @@ namespace Tinke
 
             return currNode;
         }
+
         private TreeNode Create_Nodes(sFolder currFolder, Stream stream)
         {
             TreeNode currNode = new TreeNode();
@@ -648,6 +781,7 @@ namespace Tinke
 
             return currNode;
         }
+
         private void FolderToNode(sFolder folder, ref TreeNode node)
         {
             if (folder.id < 0xF000)
@@ -692,9 +826,8 @@ namespace Tinke
                     node.Nodes.Add(fileNode);
                 }
             }
-
-
         }
+
         private TreeNode[] FilesToNodes(sFile[] files)
         {
             TreeNode[] nodos = new TreeNode[files.Length];
@@ -715,70 +848,6 @@ namespace Tinke
             }
 
             return nodos;
-        }
-
-        private void Set_Format(sFolder folder)
-        {
-            if (folder.files is List<sFile>)
-            {
-                for (int i = 0; i < folder.files.Count; i++)
-                {
-                    sFile newFile = folder.files[i];
-                    newFile.format = accion.Get_Format(newFile);
-                    folder.files[i] = newFile;
-                }
-            }
-
-
-            if (folder.folders is List<sFolder>)
-                foreach (sFolder subFolder in folder.folders)
-                    Set_Format(subFolder);
-        }
-        private void Get_SupportedFiles()
-        {
-            filesSupported = nFiles = 0; // Reiniciamos el contador
-
-            Recursive_SupportedFiles(accion.Root);
-            if (nFiles == 0)
-                nFiles = 1;
-
-            lblSupport.Text = Tools.Helper.GetTranslation("Sistema", "S30") + ' ' + (filesSupported * 100 / nFiles) + '%';
-            if ((filesSupported * 100 / nFiles) >= 75)
-                lblSupport.Font = new Font("Consolas", 10, FontStyle.Bold | FontStyle.Underline);
-            else
-                lblSupport.Font = new Font("Consolas", 10, FontStyle.Regular);
-        }
-        private void Recursive_SupportedFiles(sFolder folder)
-        {
-            if (folder.files is List<sFile>)
-            {
-                foreach (sFile archivo in folder.files)
-                {
-                    if (archivo.format == Format.System || archivo.size == 0x00)
-                        continue;
-
-                    if (archivo.format != Format.Unknown)
-                        filesSupported++;
-                    nFiles++;
-                }
-            }
-
-            if (folder.folders is List<sFolder>)
-                foreach (sFolder subFolder in folder.folders)
-                    Recursive_SupportedFiles(subFolder);
-        }
-
-        private void ThreadEspera(Object name)
-        {
-            Espera espera = new Espera((string)name, false);
-
-            try
-            {
-                espera.ShowDialog();
-            }
-            catch
-            {
-            }
         }
 
         private void treeSystem_AfterSelect(object sender, TreeViewEventArgs e)
@@ -920,6 +989,8 @@ namespace Tinke
             listFile.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
         }
 
+        #endregion
+
         #region Key events
         private void Sistema_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1044,8 +1115,8 @@ namespace Tinke
         {
             sFile file = accion.Selected_File();
             string filePath = accion.Save_File(file);
-            Form hex;
 
+            Form hex;
             if (!isMono) {
                 hex = new VisorHex(filePath, file.id, file.name != "rom.nds");
                 hex.FormClosed += hex_FormClosed;
@@ -1066,15 +1137,15 @@ namespace Tinke
         private void BtnSee(object sender, EventArgs e)
         {
             this.Cursor = Cursors.WaitCursor;
-            if (toolStripVentana.Checked)
-            {
-                Visor visor = new Visor();
-                visor.Controls.Add(accion.See_File());
-                visor.Text += " - " + accion.Selected_File().name;
-                visor.Show();
-            }
-            else
-            {
+            //if (toolStripVentana.Checked)
+            //{
+                //Visor visor = new Visor();
+                //visor.Controls.Add(accion.See_File());
+                //visor.Text += " - " + accion.Selected_File().name;
+                //visor.Show();
+            //}
+            //else
+            //{
                 for (int i = 0; i < panelObj.Controls.Count; i++)
                     panelObj.Controls[i].Dispose();
                 panelObj.Controls.Clear();
@@ -1089,7 +1160,7 @@ namespace Tinke
                 else
                     if (btnDesplazar.Text == "<<<<<")
                         btnDesplazar.PerformClick();
-            }
+            //}
             this.Cursor = Cursors.Default;
 
             if (!isMono)
@@ -1176,9 +1247,12 @@ namespace Tinke
         private void UnpackFolder()
         {
             this.Cursor = Cursors.WaitCursor;
-            Thread espera = new System.Threading.Thread(ThreadEspera);
+            Thread unpack = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
             if (!isMono)
-                espera.Start("S04");
+                unpack.Start("S04");
 
             sFolder folderSelected = accion.Selected_Folder();
             if (!(folderSelected.name is String)) // If it's the search folder or similar
@@ -1197,7 +1271,7 @@ namespace Tinke
 
             if (!isMono)
             {
-                espera.Abort();
+                espera.Close();
                 debug.Add_Text(sb.ToString());
             }
             sb.Length = 0;
@@ -1285,15 +1359,16 @@ namespace Tinke
             {
                 Directory.CreateDirectory(o.SelectedPath + Path.DirectorySeparatorChar + folderSelect.name);
 
-                Thread espera = new System.Threading.Thread(ThreadEspera);
+                Thread extract = new Thread(ThreadEspera)
+                {
+                    IsBackground = true
+                };
                 if (!isMono)
-                    espera.Start("S03");
+                    extract.Start("S03");
                 RecursivoExtractFolder(folderSelect, o.SelectedPath + Path.DirectorySeparatorChar + folderSelect.name);
                 if (!isMono)
-                    espera.Abort();
-
+                    espera.Close();
             }
-
         }
         private void RecursivoExtractFolder(sFolder currFolder, String path)
         {
@@ -1352,9 +1427,12 @@ namespace Tinke
              * Files...
             */
 
-            Thread espera = new Thread(ThreadEspera);
+            Thread create = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
             if (!isMono)
-                espera.Start("S05");
+                create.Start("S05");
 
             // Get special files
             sFolder ftc = accion.Search_Folder("ftc");
@@ -1382,12 +1460,26 @@ namespace Tinke
                 ov7 = ftc.files.FindAll(sFile => sFile.name.StartsWith("overlay7_"));
             }
 
+            // Get special DSi (TWL) files
+            sFile arm9i = new sFile();
+            sFile arm7i = new sFile();
+            if (this.twl != null)
+            {
+                index = ftc.files.FindIndex(sFile => sFile.name == "arm9i.bin");
+                if (index != -1) arm9i = ftc.files[index];
+                index = ftc.files.FindIndex(sFile => sFile.name == "arm7i.bin");
+                if (index != -1) arm7i = ftc.files[index];
+
+                // Recalcs overlays9 hashes in arm9.bin
+                this.twl.UpdateOverlays9Sha1Hmac(ref arm9, romInfo.Cabecera, ov9);
+            }
+
             #region Get ROM sections
             BinaryReader br;
             Console.WriteLine(Tools.Helper.GetTranslation("Messages", "S08"));
             Nitro.Estructuras.ROMHeader header = romInfo.Cabecera;
             uint currPos = header.headerSize;
-
+            uint gameCode = BitConverter.ToUInt32(Encoding.ASCII.GetBytes(header.gameCode), 0);
 
             // Write ARM9
             string arm9Binary = Path.GetTempFileName();
@@ -1396,8 +1488,24 @@ namespace Tinke
 
             br = new BinaryReader(File.OpenRead(arm9.path));
             br.BaseStream.Position = arm9.offset;
+            byte[] arm9Data = br.ReadBytes((int)arm9.size);
+
+            // Re-encrypt SA if Gamecode has been changed
+            if (gameCode != this.secureArea.CurrentKey)
+            {
+                this.secureArea.Encrypt(gameCode);
+                if (this.secureArea.OriginalEncrypted) Array.Copy(this.secureArea.EncryptedData, arm9Data, 0x800);
+            }
+
+            // Calc Secure Area CRC
+            if (header.ARM9romOffset == 0x4000 && header.ARM9size >= 0x4000)
+            {
+                Array.Copy(arm9Data, 0x800, this.secureArea.EncryptedData, 0x800, 0x3800);
+                header.secureCRC16 = SecureArea.CalcCRC(this.secureArea.EncryptedData, gameCode);
+            }
+
             BinaryWriter bw = new BinaryWriter(File.OpenWrite(arm9Binary));
-            bw.Write(br.ReadBytes((int)arm9.size));
+            bw.Write(arm9Data);
             bw.Flush();
             br.Close();
 
@@ -1423,7 +1531,7 @@ namespace Tinke
             br.Close();
 
             uint rem = currPos % 0x200;
-            if (rem != 0)
+            //if (rem != 0)
             {
                 while (rem < 0x200)
                 {
@@ -1446,7 +1554,7 @@ namespace Tinke
 
                 currPos += y9.size;
                 rem = currPos % 0x200;
-                if (rem != 0)
+                //if (rem != 0)
                 {
                     while (rem < 0x200)
                     {
@@ -1486,7 +1594,7 @@ namespace Tinke
 
             currPos += arm7.size;
             rem = currPos % 0x200;
-            if (rem != 0)
+            //if (rem != 0)
             {
                 while (rem < 0x200)
                 {
@@ -1509,7 +1617,7 @@ namespace Tinke
 
                 currPos += y7.size;
                 rem = currPos % 0x200;
-                if (rem != 0)
+                //if (rem != 0)
                 {
                     while (rem < 0x200)
                     {
@@ -1559,16 +1667,16 @@ namespace Tinke
 
             Console.WriteLine(Tools.Helper.GetTranslation("Messages", "S09"), new FileInfo(fileFNT).Length);
 
-
+            // Escribimos el banner
+            string banner = Path.GetTempFileName();
+            header.banner_size = Nitro.NDS.EscribirBanner(banner, romInfo.Banner);
+            
             // Escribimos el FAT (File Allocation Table)
             string fileFAT = Path.GetTempFileName();
             header.FAToffset = currPos;
-            Nitro.FAT.Write(fileFAT, accion.Root, header.FAToffset, accion.SortedIDs, arm9overlayOffset, arm7overlayOffset);
+            Nitro.FAT.Write(fileFAT, accion.Root, header.FAToffset, accion.SortedIDs, arm9overlayOffset, arm7overlayOffset, header.banner_size);
             currPos += (uint)new FileInfo(fileFAT).Length;
 
-            // Escribimos el banner
-            string banner = Path.GetTempFileName();
-            Nitro.NDS.EscribirBanner(banner, romInfo.Banner);
             header.bannerOffset = currPos;
             currPos += (uint)new FileInfo(banner).Length;
 
@@ -1579,7 +1687,105 @@ namespace Tinke
 
             // Update the ROM size values of the header
             header.ROMsize = currPos;
+
+            // Update DSi staff header info
+            if (this.twl != null && (header.unitCode & 2) > 0)
+            {
+                // ARM9i and ARM7i files
+                this.twl.ImportArm9iData(arm9i.path, arm9i.offset, arm9i.size);
+                this.twl.ImportArm7iData(arm7i.path, arm7i.offset, arm7i.size);
+                header.dsi9_size = arm9i.size;
+                header.dsi7_size = arm7i.size;
+
+                // Digest constants
+                header.digest_sector_size = 0x400;
+                header.digest_block_sectorcount = 0x20;
+                header.digest_ntr_start = 0x4000;
+
+                // Digest NTR
+                header.ROMsize += header.digest_sector_size - (header.ROMsize - header.digest_ntr_start) % header.digest_sector_size;
+                header.digest_ntr_size = header.ROMsize - header.digest_ntr_start;
+
+                // Digest TWL
+                header.dsi9_rom_offset = 0;
+                header.dsi7_rom_offset = (header.dsi9_size >= 0x4000)
+                                             ? header.dsi9_size + header.digest_sector_size
+                                               - header.dsi9_size % header.digest_sector_size
+                                             : 0x4000;
+                header.digest_twl_size = header.dsi7_rom_offset + header.dsi7_size + header.digest_sector_size - header.dsi7_size % header.digest_sector_size;
+
+                // Hashtable of digest sectors
+                header.sector_hashtable_start = header.ROMsize;
+                header.sector_hashtable_size = (header.digest_ntr_size + header.digest_twl_size) / header.digest_sector_size * 0x14;
+                uint padSize = 0x14 * header.digest_block_sectorcount;
+                if (header.sector_hashtable_size % padSize != 0) header.sector_hashtable_size += padSize - header.sector_hashtable_size % padSize;
+
+                // Hashtable of sectors hashs blocks 
+                header.block_hashtable_start = header.sector_hashtable_start + header.sector_hashtable_size;
+                if (header.block_hashtable_start % 0x200 != 0) header.block_hashtable_start += 0x200 - header.block_hashtable_start % 0x200;
+                header.block_hashtable_size = header.sector_hashtable_size / header.digest_block_sectorcount;
+
+                // TWL sections offsets
+                header.digest_twl_start = header.block_hashtable_start + header.block_hashtable_size;
+                header.digest_twl_start += 0x200 - header.digest_twl_start % 0x200;
+                header.digest_twl_start += header.digest_sector_size - header.digest_twl_start % header.digest_sector_size;
+                if (!header.trimmedRom && header.digest_twl_start % 0x80000 != 0) header.digest_twl_start += 0x80000 - (header.digest_twl_start % 0x80000) + 0x3000;
+                //if (header.digest_twl_start % 0x80000 != 0) header.digest_twl_start += 0x80000 - (header.digest_twl_start % 0x80000) + 0x3000;
+                header.dsi9_rom_offset += header.digest_twl_start;
+                header.dsi7_rom_offset += header.digest_twl_start;
+
+                // Modcrypt info
+                if ((header.twlInternalFlags & 2) > 0)
+                {
+                    if ((header.tid_high & 0xF) == 0)
+                    {
+                        // Standard for FULL TWL ROMs (DSi Exclusive / DSi Enhanced)
+                        header.modcrypt1_size = (uint)Math.Min(0x4000, this.twl.DSi9Data.Length);
+                        header.modcrypt2_size = 0;
+                        header.modcrypt1_start = header.dsi9_rom_offset;
+                        header.modcrypt2_start = 0;
+                    }
+                    else
+                    {
+                        // Standard for DSiWare
+                        header.modcrypt1_size = (uint)this.twl.DSi9Data.Length;
+                        header.modcrypt2_size = (uint)this.twl.DSi7Data.Length;
+                        header.modcrypt1_start = header.dsi9_rom_offset;
+                        header.modcrypt2_start = header.dsi7_rom_offset;
+                    }
+                }
+                else
+                {
+                    header.modcrypt1_start = 0;
+                    header.modcrypt2_start = 0;
+                    header.modcrypt1_size = 0;
+                    header.modcrypt2_size = 0;
+                }
+
+                // ROM size
+                header.ROMsize = header.block_hashtable_start + header.block_hashtable_size;
+                header.ROMsize += 0x200 - header.ROMsize % 0x200;
+                header.total_rom_size = header.digest_twl_start + header.digest_twl_size;
+                currPos = header.total_rom_size;
+
+                // Encrypt ARM9 Secure Area (for HMAC-SHA1 hash)
+                if (!this.secureArea.OriginalEncrypted) Array.Copy(this.secureArea.EncryptedData, arm9Data, 0x800);
+
+                // Compute Hash
+                HMACSHA1 hmac = new HMACSHA1(TWL.hmac_sha1_key);
+                header.hmac_arm9 = hmac.ComputeHash(arm9Data, 0, (int)header.ARM9size);
+                header.hmac_arm7 = hmac.ComputeHash(File.ReadAllBytes(arm7Binary), 0, (int)header.ARM7size);
+                header.hmac_icon_title = hmac.ComputeHash(File.ReadAllBytes(banner), 0, (int)header.banner_size);
+                header.hmac_arm9i = hmac.ComputeHash(this.twl.DSi9Data, 0, (int)header.dsi9_size);
+                header.hmac_arm7i = hmac.ComputeHash(this.twl.DSi7Data, 0, (int)header.dsi7_size);
+                header.hmac_arm9_no_secure = hmac.ComputeHash(arm9Data, 0x4000, (int)header.ARM9size - 0x4000);
+                hmac.Clear();
+                hmac.Dispose();
+            }
+
             header.tamaño = (uint)Math.Ceiling(Math.Log(currPos, 2));
+            // Ref. to TWL SDK' "Card Manual" for DSi Cartrige ROMs
+            if ((header.unitCode & 2) > 0 && (header.tid_high & 0xF) == 0 && header.tamaño < 25) header.tamaño = 25; 
             header.tamaño = (uint)Math.Pow(2, header.tamaño);
 
             // Get Header CRC
@@ -1594,13 +1800,11 @@ namespace Tinke
             string header_file = Path.GetTempFileName();
             Nitro.NDS.EscribirCabecera(header_file, header, accion.ROMFile);
 
-
             Console.Write("<br>");
             #endregion
 
             if (!isMono)
-                espera.Abort();
-
+                espera.Close();
 
             // Obtenemos el nuevo archivo para guardar
             SaveFileDialog o = new SaveFileDialog();
@@ -1608,7 +1812,7 @@ namespace Tinke
             o.DefaultExt = ".nds";
             o.Filter = "Nintendo DS ROM (*.nds)|*.nds";
             o.OverwritePrompt = true;
-        Open_Dialog:
+            Open_Dialog:
             if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 if (o.FileName == accion.ROMFile)
@@ -1617,13 +1821,15 @@ namespace Tinke
                     goto Open_Dialog;
                 }
 
-                espera = new Thread(ThreadEspera);
+                Thread saverom = new Thread(ThreadEspera)
+                {
+                    IsBackground = true
+                };
                 if (!isMono)
-                    espera.Start("S06");
+                    saverom.Start("S06");
 
                 Console.WriteLine(Tools.Helper.GetTranslation("Messages", "S0D"), o.FileName);
                 bw = new BinaryWriter(new FileStream(o.FileName, FileMode.Create));
-
                 Ekona.Helper.IOutil.Append(ref bw, header_file);
                 Ekona.Helper.IOutil.Append(ref bw, arm9Binary);
                 Ekona.Helper.IOutil.Append(ref bw, arm7Binary);
@@ -1632,19 +1838,37 @@ namespace Tinke
                 Ekona.Helper.IOutil.Append(ref bw, banner);
                 Ekona.Helper.IOutil.Append(ref bw, files);
 
-                rem = header.tamaño - (uint)bw.BaseStream.Position;
-                while (rem > 0)
+                // Write DSi data
+                if (this.twl != null && (header.unitCode & 2) > 0)
                 {
-                    bw.Write((byte)0xFF);
-                    rem--;
+                    this.twl.Write(ref bw, header, out header.hmac_digest_master);
+                    TWL.UpdateHeaderSignatures(ref bw, ref header, header_file);
                 }
+
+                if (!header.trimmedRom)
+                {
+                    rem = header.tamaño - (uint)bw.BaseStream.Position;
+                    while (rem > 0)
+                    {
+                        bw.Write((byte)0xFF);
+                        rem--;
+                    }
+                }
+
                 bw.Flush();
                 bw.Close();
 
                 Console.WriteLine("<b>" + Tools.Helper.GetTranslation("Messages", "S09") + "</b>", new FileInfo(o.FileName).Length);
                 accion.IsNewRom = false;
-            }
 
+                if (!isMono)
+                {
+                    espera.Close();
+                    debug.Add_Text(sb.ToString());
+                }
+                sb.Length = 0;
+            }
+            
             // Borramos archivos ya innecesarios
             File.Delete(header_file);
             File.Delete(arm9Binary);
@@ -1656,19 +1880,18 @@ namespace Tinke
             File.Delete(banner);
             File.Delete(files);
 
-            if (!isMono)
-            {
-                espera.Abort();
-                debug.Add_Text(sb.ToString());
-            }
-            sb.Length = 0;
+            //if (!isMono)
+                //debug.Add_Text(sb.ToString());
+            //sb.Length = 0;
         }
         private void btnImport_Click(object sender, EventArgs e)
         {
-            OpenFileDialog o = new OpenFileDialog();
-            o.CheckFileExists = true;
-            o.CheckPathExists = true;
-            o.Multiselect = true;
+            OpenFileDialog o = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = true
+            };
             if (o.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
 
@@ -1749,7 +1972,7 @@ namespace Tinke
         {
             System.Diagnostics.Process.Start(Application.ExecutablePath);
         }
-        private void toolStripVentana_Click(object sender, EventArgs e)
+        /*private void toolStripVentana_Click(object sender, EventArgs e)
         {
             if (toolStripVentana.Checked)
             {
@@ -1768,7 +1991,7 @@ namespace Tinke
                 btnDesplazar.Text = ">>>>>";
             }
 
-        }
+        }*/
         void romInfo_FormClosing(object sender, FormClosingEventArgs e)
         {
             toolStripInfoRom.Checked = romInfo.Visible;
@@ -1782,6 +2005,7 @@ namespace Tinke
         #region Menu-> Open as...
         private void ShowControl(Control control, string name)
         {
+            /*
             if (toolStripVentana.Checked)
             {
                 Visor visor = new Visor();
@@ -1789,7 +2013,8 @@ namespace Tinke
                 visor.Text += " - " + name;
                 visor.Show();
             }
-            else if (control is Control)
+            */
+            if (control is Control)
             {
                 panelObj.Controls.Clear();
 
@@ -1926,7 +2151,10 @@ namespace Tinke
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
 
-            Thread wait = new Thread(ThreadEspera);
+            Thread wait = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
             if (!isMono)
                 wait.Start("S04");
 
@@ -1970,7 +2198,7 @@ namespace Tinke
 
             if (!isMono)
             {
-                wait.Abort();
+                espera.Close();
                 debug.Add_Text(sb.ToString());
             }
             sb.Length = 0;
@@ -2002,15 +2230,15 @@ namespace Tinke
                     if (action == null)
                         break;
 
-                    if (toolStripVentana.Checked)
-                    {
-                        Visor visor = new Visor();
-                        visor.Controls.Add((Control)action);
-                        visor.Text += " - " + opFile.name;
-                        visor.Show();
-                    }
-                    else
-                    {
+                    //if (toolStripVentana.Checked)
+                    //{
+                        //Visor visor = new Visor();
+                        //visor.Controls.Add((Control)action);
+                        //visor.Text += " - " + opFile.name;
+                       // visor.Show();
+                   // }
+                    //else
+                    //{
                         for (int i = 0; i < panelObj.Controls.Count; i++)
                             panelObj.Controls[i].Dispose();
                         panelObj.Controls.Clear();
@@ -2025,7 +2253,7 @@ namespace Tinke
                         else
                             if (btnDesplazar.Text == "<<<<<")
                                 btnDesplazar.PerformClick();
-                    }
+                    //}
                     break;
 
                 case 2:     // Unpack
@@ -2068,11 +2296,16 @@ namespace Tinke
                 return;
             }
 
-            Thread waiting = new System.Threading.Thread(ThreadEspera);
+            Thread waiting = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
 
-            sFolder resul = new sFolder();
-            resul.files = new List<sFile>();
-            resul.folders = new List<sFolder>();
+            sFolder resul = new sFolder
+            {
+                files = new List<sFile>(),
+                folders = new List<sFolder>()
+            };
 
             #region Search type
             if (txtSearch.Text == "<Ani>")
@@ -2156,7 +2389,7 @@ namespace Tinke
             treeSystem.EndUpdate();
 
             if (!isMono && waiting.ThreadState == ThreadState.Running)
-                waiting.Abort();
+                espera.Close();
         }
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
@@ -2214,6 +2447,90 @@ namespace Tinke
                 btnDesplazar.Text = ">>>>>";
             }
         }
+        private void btnImport1_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog FBD = new FolderBrowserDialog
+            {
+                Description = Tools.Helper.GetTranslation("Sistema", "S47"),
+                ShowNewFolderButton = false
+            };
+            if (FBD.ShowDialog() != DialogResult.OK)
+                return;
 
+            Thread matching = new Thread(ThreadEspera)
+            {
+                IsBackground = true
+            };
+            if (!isMono)
+                matching.Start("S08");
+
+            Console.WriteLine(FBD.SelectedPath);
+            List<string> files = new List<string>();
+            files = GetAllSubFiles(FBD.SelectedPath, files);
+            foreach (string currFile in files)
+            {
+                string nstr;
+                int index;
+                nstr = currFile.Replace("\\", "/");
+                index = nstr.IndexOf("root");
+                nstr = nstr.Remove(0, index + 4);
+
+                sFolder filesWithSameName = new sFolder();
+                filesWithSameName = accion.Search_FileName(Path.GetFileName(currFile));
+
+                sFile fileToBeChanged;
+                if (filesWithSameName.files.Count == 0)
+                    continue;
+                else if (filesWithSameName.files.Count == 1)
+                    fileToBeChanged = filesWithSameName.files[0];
+                else
+                {
+                    int i;
+                    for (i = 0; i < filesWithSameName.files.Count; i++)
+                    {
+                        sFile file = filesWithSameName.files[i];
+                        string tmpstr;
+                        file.tag = accion.Get_RelativePath(filesWithSameName.files[i].id, "", accion.Root);
+                        tmpstr = (String)file.tag + '/' + file.name;
+                        if (string.Equals(nstr, tmpstr) == true)
+                        {
+                            filesWithSameName.files[i] = file;
+                            break;
+                        }
+                    }
+                    if (i != filesWithSameName.files.Count)
+                    {
+                        fileToBeChanged = filesWithSameName.files[i];
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                accion.Change_File(fileToBeChanged.id, currFile);
+                Console.WriteLine(currFile);
+            }
+
+            if (!isMono)
+                espera.Close();
+        }
+        public static List<string> GetAllSubFiles(string directoryPath, List<string> files)
+        {
+            DirectoryInfo currentDirectoryInfo = new DirectoryInfo(directoryPath);
+
+            FileInfo[] currentFileInfos = currentDirectoryInfo.GetFiles();
+            foreach (FileInfo f in currentFileInfos)
+            {
+                files.Add(f.FullName);
+            }
+
+            DirectoryInfo[] subDirectoryInfos = currentDirectoryInfo.GetDirectories();
+
+            foreach (DirectoryInfo d in subDirectoryInfos)
+            {
+                GetAllSubFiles(d.FullName, files);
+            }
+            return files;
+        }
     }
 }
