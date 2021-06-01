@@ -5,26 +5,30 @@
 <a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat" /></a>
 </p>
 
-> Tinke is a program to see, convert, and edit the **files of NDS games**. You can see a lot of format files like images, text, sounds, fonts and textures. Furthermore it works with **plugins** made in NET Framework languages (C# and VB.NET) so it's so easy to support new formats.
+> Tinke is a program to view, convert, and edit the **files of NDS games**. You can edit a lot of file formats, like images, text, sounds, fonts and textures. Furthermore, it works with **plugins** made in .NET Framework languages (C# and VB.NET), so it's so easy to support new formats.
 
 To run the program you must have installed **[.NET Framework 4.5](https://www.microsoft.com/es-es/download/details.aspx?id=30653)** or **[mono](http://www.mono-project.com/download)**. In the case of *mono* on *Linux*, make sure you have installed the package **mono-locale-extras** too. For Mac, you need *mono* and *pkg-config* installed and configured, you'll use *mono32* to exec Tinke.
 
-Thread at GBAtemp.net: http://gbatemp.net/topic/303529-tinke-072/
+Original thread at GBAtemp.net: http://gbatemp.net/topic/303529-tinke-072/
 
-**Tinke is discontinued and not longer supported. Will provide a new solution in the long term.**
+Some other forks that may be worth checking out:
+https://github.com/MightyBirdy/tinke
+https://github.com/MetLob/tinke
+https://github.com/chyyran/tinke
+
+**Tinke has been continued by TBNSMB, who is working on providing an updated version of tinke, which was discontinued by the original author, pleonex.**
 
 # Features
 
- * Show the ROM header with the banner and edit it.
- * Show and convert to common format a lot of files.
- * Edit a lot of image files from BMP files (NCLR, NCGR, NSCR, NCER), audio files from WAV (SWAV, SWAR, STRM) and fonts (NFTR).
- * Hexadecimal visor.
- * Change the content of the files and save the new ROM.
+ * View the ROM header with the banner and edit it.
+ * View, edit, and convert files to and from a ton of common file formats.
+ * Hexadecimal editor.
+ * Change the contents of the filesystem and save a new, edited ROM.
  * Multilanguage support.
 
 # Supported formats
 
-## Images
+## Palettes, Tiles, Screens And Images
  * NCLR => Nitro CoLouR(palette)
  * NCGR => Nitro Character Graphic Resource (tiles)
  * NBGR => Nitro Basic Graphic Resource (tiles)
@@ -40,9 +44,9 @@ Thread at GBAtemp.net: http://gbatemp.net/topic/303529-tinke-072/
  * NTFP => NiTro File Palette (palette)
  * RAW => Raw image (tiles)
  * MAP => Raw map info (map)
- * Common formats => PNG, JPG, TGA
+ * Common image formats => PNG, JPG, TGA, BMP
 
-## Textures
+## Textures And Models
  * BTX0 (NSBTX)
  * BMD0 (NSBMD)
 
@@ -56,39 +60,49 @@ Thread at GBAtemp.net: http://gbatemp.net/topic/303529-tinke-072/
 
 ## Text
  * Sound definition => SADL, XSADL, SARC, SBDL, SMAP.
- * BMG => Pack text file
- * Common formats => TXT, XML, INI, H, BAT, C, MAKEFILE, LUA, CSV, BUILDTIME
+ * BMG => Nintendo packed text file
+ * Common formats => TXT, XML, INI, H, BAT, C, MAKEFILE, LUA, LUA.BAK, CSV, BUILDTIME, HTML, CSS, JS, NAIX, DTD, BSF, NBSD
 
 ## Compression
-  Thanks to DSDEcmp library [DSDecmp](http://code.google.com/p/dsdecmp) (credits to *barubary*)
+  Thanks to DSDecmp library [DSDecmp](http://code.google.com/p/dsdecmp) (credits to *barubary*)
  * Huffman (id = 0x20)
  * LZ77    (id = 0x10)
  * LZSS    (id = 0x11)
  * RLE     (id = 0x30)
 
 ## Pack
- * NARC o ARC => Nintendo ARChives
+ * NARC and ARC => Nintendo ARChives
  * Utility.bin => Wifi data files
+ * FUN => DGamer archive files
+ 
+# Note: Additional formats that are not currently recognized by the program as openable files, for example, plain text files that have an unknown extension, can be opened with the "Open As..." dialog.
 
 # Specific plugin for games
- * 999, nine hours nine persons nine doors (BSKE)
+ * 999: Nine Hours, Nine Persons, Nine Doors (BSKE)
  * Itsu Demo Doko Demo Dekiru Igo (AIIJ)
  * Blood of Bahamut (CYJJ)
  * Dragon Ball Kai Ultimate Butouden (TDBJ)
- * Ace Attorney Investigation Miles Edgeworth (C32P, C32J)
+ * Ace Attorney Investigations: Miles Edgeworth (C32P, C32J)
  * Gyakuten Kenji 2 (BXOJ)
  * Kirby Squeak Squad (AKWE)
- * Last Window The secrete of Cape West (YLUP)
- * El profesor Layton y la Villa Misteriosa (A5FE, A5FP)
- * El profesor Layton y la Caja de Pandora (YLTS)
+ * Last Window: The Secret Of Cape West (YLUP)
+ * Professor Layton and the Mysterious Village (A5FE, A5FP)
+ * Professor Layton and Pandora's Box (YLTS)
  * Maple Story DS (YMPK)
  * Ninokuni Shikkoku no Madoushi (B2KJ)
  * Rune Factory 3 (BRFE, BRFJ)
- * The world end with you (AWLJ)
+ * The World Ends With You (AWLJ)
  * Tetris DS (YLUP)
  * Tokimeki Memorial Girl's Side 3rd Story (B3SJ)
  * Cake Mania 2 (CAKX)
  * Jump! Ultimate Stars (ALAR, DSIG, DSCP)
+ * Time Ace (AE3E) (Also works for Powerbike (C2BE))
+ * Sonic Rush Adventure (A3YE)
+ * Inazuma Eleven
+ * Tales Of The Tempest
+ * A Witch's Tale
+ * Death Note: Kira Game
+ * Gakuen Hetalia DS
 
 ----
 
@@ -101,8 +115,9 @@ Link to web pages with NDS info:
 ----
 
 ## Compile instructions
-* Windows: run compile.bat
+* Windows: "run compile.bat" (doesn't work but whatever just use the second method), or use visual studio.
 * Unix: ./compile.sh
+* Or alternatively just run the precompiled assemblies in Tinke/Bin/Debug or Tinke/Bin/Release
 
 ## Screenshots
 ![Tinke 0.8.1](https://lh5.googleusercontent.com/-GRKvfv-TAaI/ToBy1_eFrfI/AAAAAAAAASA/9WDkc_OQPC4/s800/Tinke%2525200.8.1.PNG)

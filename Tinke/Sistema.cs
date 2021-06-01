@@ -19,8 +19,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -48,7 +46,7 @@ namespace Tinke
         public Sistema()
         {
             InitializeComponent();
-            this.Text = "Tinke " + Application.ProductVersion + " - romhacking by pleoNeX";
+            this.Text = "Tinke " + Application.ProductVersion + " - romhacking software by pleoNeX and TBNSMB";
 
             // The IE control of the Debug windows doesn't work in Mono
             isMono = (Type.GetType("Mono.Runtime") != null) ? true : false;
@@ -213,7 +211,7 @@ namespace Tinke
             accion = new Acciones(file, new String(romInfo.Cabecera.gameCode));
             DateTime t2 = DateTime.Now;
 
-            // Read File Allocation Table (offset and size)
+            // Read the File Allocation Table (offset and size)
             Nitro.Estructuras.sFAT[] fat = Nitro.FAT.ReadFAT(file, romInfo.Cabecera.FAToffset, romInfo.Cabecera.FATsize);
             DateTime t3 = DateTime.Now;
 
@@ -364,7 +362,7 @@ namespace Tinke
             toolStripInfoRom.Enabled = false;
             btnSaveROM.Enabled = false;
 
-            romInfo = new RomInfo(); // Para que no se formen errores...
+            romInfo = new RomInfo(); // So that no mistakes are made ...
             DateTime startTime = DateTime.Now;
 
             accion = new Acciones("", "NO GAME");
@@ -373,7 +371,7 @@ namespace Tinke
             accion.LastFileID = files.Length;
             accion.LastFolderID = 0xF000;
 
-            // Obtenemos el sistema de archivos
+            // We get the file system
             sFolder root = new sFolder();
             root.name = "root";
             root.id = 0xF000;
@@ -421,7 +419,7 @@ namespace Tinke
             toolStripInfoRom.Enabled = false;
             btnSaveROM.Enabled = false;
 
-            romInfo = new RomInfo(); // Para que no se formen errores...
+            romInfo = new RomInfo(); // So that no mistakes are made ...
             DateTime startTime = DateTime.Now;
 
             accion = new Acciones("", "NO GAME");
@@ -430,7 +428,7 @@ namespace Tinke
             accion.LastFileID = 0;
             accion.LastFolderID = 0xF000;
 
-            // Obtenemos el sistema de archivos
+            // We get the file system
             sFolder root = new sFolder();
             root.name = "root";
             root.id = 0xF000;
@@ -567,7 +565,7 @@ namespace Tinke
         {
             TreeNode currNode = new TreeNode();
 
-            if (currFolder.id < 0xF000) // Archivo descomprimido
+            if (currFolder.id < 0xF000) // Unzipped file
             {
                 int imageIndex = accion.ImageFormatFile(accion.Get_Format(currFolder.id));
                 currNode = new TreeNode(currFolder.name, imageIndex, imageIndex);
@@ -609,7 +607,7 @@ namespace Tinke
         {
             TreeNode currNode = new TreeNode();
 
-            if (currFolder.id < 0xF000) // Archivo descomprimido
+            if (currFolder.id < 0xF000) // Unzipped file
             {
                 int imageIndex = accion.ImageFormatFile(accion.Get_Format(currFolder.id));
                 currNode = new TreeNode(currFolder.name, imageIndex, imageIndex);
@@ -684,7 +682,7 @@ namespace Tinke
                     {
                         ext = accion.Get_MagicIDS(archivo);
                         if (ext != "")
-                            ext = " [" + ext + ']'; // Previene extensiones vacías
+                            ext = " [" + ext + ']'; // Prevents empty extensions
                     }
                     TreeNode fileNode = new TreeNode(archivo.name + ext, nImage, nImage);
                     fileNode.Name = archivo.name;
@@ -736,7 +734,7 @@ namespace Tinke
         }
         private void Get_SupportedFiles()
         {
-            filesSupported = nFiles = 0; // Reiniciamos el contador
+            filesSupported = nFiles = 0; // We reset the counter
 
             Recursive_SupportedFiles(accion.Root);
             if (nFiles == 0)
