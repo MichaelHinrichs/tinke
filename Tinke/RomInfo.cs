@@ -18,12 +18,13 @@
  * 
  */
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+//using System.Collections.Generic;
+//using System.ComponentModel;
+//using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.IO;
+//using System.Linq;
+//using System.Text;
 using System.Windows.Forms;
 using Ekona.Helper;
 
@@ -48,7 +49,10 @@ namespace Tinke
             try
             {
                 Nitro.Estructuras.ROMHeader cabecera = Nitro.NDS.LeerCabecera(archivo);
-                Nitro.Estructuras.Banner banner = Nitro.NDS.LeerBanner(archivo, cabecera.bannerOffset);
+                Nitro.Estructuras.Banner banner = Nitro.NDS.LeerBanner(
+                    archivo,
+                    cabecera.bannerOffset,
+                    cabecera.banner_size);
                 Mostrar_Informacion(cabecera, banner);
                 this.checkTrans.Checked = true;
             }
@@ -63,7 +67,6 @@ namespace Tinke
 
             LeerIdioma();
         }
-
         public void LeerIdioma()
         {
             System.Xml.Linq.XElement xml = Tools.Helper.GetTranslation("RomInfo");
@@ -73,8 +76,8 @@ namespace Tinke
             btnBannerGuardar.Text = xml.Element("S03").Value;
             label2.Text = xml.Element("S04").Value;
             label4.Text = xml.Element("S05").Value;
-            lblGameTitle.Text = xml.Element("S0F").Value;
-            comboBannerLang.Text = xml.Element("S06").Value;
+            lblGameTitle.Text = xml.Element("S41").Value;
+            //comboBannerLang.Text = xml.Element("S06").Value;
             comboBannerLang.Items[0] = xml.Element("S06").Value;
             comboBannerLang.Items[1] = xml.Element("S07").Value;
             comboBannerLang.Items[2] = xml.Element("S08").Value;
@@ -128,7 +131,21 @@ namespace Tinke
             listInfo.Items[41].SubItems[1].Text = xml.Element("S38").Value;
             checkTrans.Text = xml.Element("S3A").Value;
             btnEdit.Text = xml.Element("S3B").Value;
-
+            btnDumpicondata.Text = xml.Element("S3E").Value;
+            btnDumpAdata.Text = xml.Element("S3F").Value;
+            btnDumpiheader.Text = xml.Element("S40").Value;
+            //Place these code here to fix compilation error...
+            if (banner.version >= 2)
+                this.comboBannerLang.Items.Add(Tools.Helper.GetTranslation("RomInfo", "S3C"));
+            if (banner.version >= 3)
+                this.comboBannerLang.Items.Add(Tools.Helper.GetTranslation("RomInfo", "S3D"));
+            if (banner.version > 3 && (banner.GetDefSize(Cabecera.banner_size, true) != 0x840))
+                this.btnDumpAdata.Enabled = true;
+        }
+        public void Refresh_flag()
+        {
+            if ((Cabecera.unitCode & 2) > 0 && Sistema.twl_flag == true)
+                this.btnDumpiheader.Enabled = true;
         }
         private void Mostrar_Informacion(Nitro.Estructuras.ROMHeader cabecera, Nitro.Estructuras.Banner banner)
         {
@@ -206,12 +223,19 @@ namespace Tinke
             picBanner = Nitro.NDS.IconoToBitmap(banner.tileData, banner.palette);
             picIcon.Image = picBanner;
 
-            txtBannerVer.Text = banner.version.ToString();
+            txtBannerVer.Text = banner.version.ToString("X");
             txtBannerCRC.Text = String.Format("{0:X}", banner.CRC16) + " (" +
                 (banner.checkCRC ? "OK)" : Tools.Helper.GetTranslation("RomInfo", "S39") + ')');
             txtBannerReserved.Text = BitsConverter.BytesToHexString(banner.reserved);
 
-            titulos = new string[] { banner.japaneseTitle, banner.englishTitle, banner.frenchTitle, banner.germanTitle, banner.italianTitle, banner.spanishTitle };
+            if (banner.version >= 3)
+                titulos = new string[] { banner.japaneseTitle, banner.englishTitle, banner.frenchTitle, banner.germanTitle,
+                    banner.italianTitle, banner.spanishTitle, banner.chineseTitle, banner.koreanTitle };
+            else if (banner.version == 2)
+                titulos = new string[] { banner.japaneseTitle, banner.englishTitle, banner.frenchTitle, banner.germanTitle,
+                    banner.italianTitle, banner.spanishTitle, banner.chineseTitle };
+            else
+                titulos = new string[] { banner.japaneseTitle, banner.englishTitle, banner.frenchTitle, banner.germanTitle, banner.italianTitle, banner.spanishTitle};
             txtBannerTitle.Text = titulos[0];
             comboBannerLang.SelectedIndex = 0;
             #endregion
@@ -227,7 +251,6 @@ namespace Tinke
             get { return banner; }
             set { banner = value; }
         }
-
         private void btnBannerGuardar_Click(object sender, EventArgs e)
         {
             SaveFileDialog o = new SaveFileDialog();
@@ -261,6 +284,12 @@ namespace Tinke
                 case 5:
                     txtBannerTitle.Text = titulos[5];
                     break;
+                case 6:
+                    txtBannerTitle.Text = titulos[6];
+                    break;
+                case 7:
+                    txtBannerTitle.Text = titulos[7];
+                    break;
             }
         }
 
@@ -292,17 +321,139 @@ namespace Tinke
             banner = editor.Banner;
 
             Mostrar_Informacion(cabecera, banner);
+            if (checkTrans.Checked)
+            {
+                Bitmap imagen = (Bitmap)picBanner.Clone();
+                imagen.MakeTransparent(Ekona.Images.Actions.BGR555ToColor(banner.palette)[0]);
+                picIcon.Image = imagen;
+            }
+            else
+                picIcon.Image = picBanner;
         }
 
-        private void RomInfo_Resize(object sender, EventArgs e)
-        {
-            btnEdit.Location = new Point(groupBanner.Location.X + 5, 313);
-        }
+        //private void RomInfo_Resize(object sender, EventArgs e)
+        //{
+            //btnEdit.Location = new Point(groupBanner.Location.X + 5, 313);
+        //}
 
         private void RomInfo_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             this.Hide();
+        }
+
+        private void btnDumpicondata_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog o = new SaveFileDialog
+            {
+                AddExtension = true,
+                CheckPathExists = true,
+                DefaultExt = ".idat",
+                OverwritePrompt = true,
+                Filter = "Tinke icon data (*.idat)|*.idat"
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                BinaryWriter bw;
+                bw = new BinaryWriter(new FileStream(o.FileName, FileMode.Create));
+                bw.Write(banner.tileData);
+                bw.Write(banner.palette);
+                bw.Flush();
+                bw.Close();
+            }
+        }
+
+        private void btnDumpAdata_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog o = new SaveFileDialog
+            {
+                AddExtension = true,
+                CheckPathExists = true,
+                DefaultExt = ".adat",
+                OverwritePrompt = true,
+                Filter = "Tinke animation data(*.adat)|*.adat"
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                BinaryWriter bw;
+                bw = new BinaryWriter(new FileStream(o.FileName, FileMode.Create));
+                bw.Write(banner.aniIconData);
+                bw.Flush();
+                bw.Close();
+            }
+        }
+
+        private void btnDumpiheader_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog o = new SaveFileDialog
+            {
+                AddExtension = true,
+                CheckPathExists = true,
+                DefaultExt = ".ihdr",
+                OverwritePrompt = true,
+                Filter = "Tinke donor iheader (*.ihdr)|*.ihdr"
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                BinaryWriter bw;
+                bw = new BinaryWriter(new FileStream(o.FileName, FileMode.Create));
+                bw.Write(cabecera.gameCode);
+                for (int i = 0; i < 5; i++) bw.Write(cabecera.global_mbk_setting[i]);
+                for (int i = 0; i < 3; i++) bw.Write(cabecera.arm9_mbk_setting[i]);
+                for (int i = 0; i < 3; i++) bw.Write(cabecera.arm7_mbk_setting[i]);
+                bw.Write(cabecera.mbk9_wramcnt_setting);
+                bw.Write(cabecera.region_flags);
+                bw.Write(cabecera.access_control);
+                bw.Write(cabecera.scfg_ext_mask);
+                bw.Write(cabecera.appflags);
+                bw.Write(cabecera.dsi9_rom_offset);
+                bw.Write(cabecera.offset_0x1C4);
+                bw.Write(cabecera.dsi9_ram_address);
+                bw.Write(cabecera.dsi9_size);
+                bw.Write(cabecera.dsi7_rom_offset);
+                bw.Write(cabecera.offset_0x1D4);
+                bw.Write(cabecera.dsi7_ram_address);
+                bw.Write(cabecera.dsi7_size);
+                bw.Write(cabecera.digest_ntr_start);
+                bw.Write(cabecera.digest_ntr_size);
+                bw.Write(cabecera.digest_twl_start);
+                bw.Write(cabecera.digest_twl_size);
+                bw.Write(cabecera.sector_hashtable_start);
+                bw.Write(cabecera.sector_hashtable_size);
+                bw.Write(cabecera.block_hashtable_start);
+                bw.Write(cabecera.block_hashtable_size);
+                bw.Write(cabecera.digest_sector_size);
+                bw.Write(cabecera.digest_block_sectorcount);
+                bw.Write(cabecera.banner_size);
+                bw.Write(cabecera.offset_0x20C);
+                bw.Write(cabecera.total_rom_size);
+                bw.Write(cabecera.offset_0x214);
+                bw.Write(cabecera.offset_0x218);
+                bw.Write(cabecera.offset_0x21C);
+                bw.Write(cabecera.modcrypt1_start);
+                bw.Write(cabecera.modcrypt1_size);
+                bw.Write(cabecera.modcrypt2_start);
+                bw.Write(cabecera.modcrypt2_size);
+                bw.Write(cabecera.tid_low);
+                bw.Write(cabecera.tid_high);
+                bw.Write(cabecera.public_sav_size);
+                bw.Write(cabecera.private_sav_size);
+                bw.Write(cabecera.reserved5);
+                bw.Write(cabecera.age_ratings);
+                bw.Write(cabecera.hmac_arm9);
+                bw.Write(cabecera.hmac_arm7);
+                bw.Write(cabecera.hmac_digest_master);
+                bw.Write(cabecera.hmac_icon_title);
+                bw.Write(cabecera.hmac_arm9i);
+                bw.Write(cabecera.hmac_arm7i);
+                bw.Write(cabecera.reserved6);
+                bw.Write(cabecera.hmac_arm9_no_secure);
+                bw.Write(cabecera.reserved7);
+                bw.Write(cabecera.debug_args);
+                bw.Write(cabecera.rsa_signature);
+                bw.Flush();
+                bw.Close();
+            }
         }
     }
 }

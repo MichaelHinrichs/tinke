@@ -23,12 +23,12 @@
 // <date>28/04/2012 14:25:12</date>
 // -----------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+//using System.Collections.Generic;
+//using System.ComponentModel;
+//using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
+//using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using Ekona.Helper;
@@ -52,7 +52,15 @@ namespace Tinke
             this.header = header;
             this.banner = banner;
             LoadValues();
+            if (banner.version >= 2)
+                this.comboBanTitles.Items.Add(Tools.Helper.GetTranslation("EditRomInfo", "S2B"));
+            if (banner.version >= 3)
+                this.comboBanTitles.Items.Add(Tools.Helper.GetTranslation("EditRomInfo", "S2C"));
             comboBanTitles.SelectedIndex = 0;
+            if (banner.version > 3)
+                this.btnImportAdata.Enabled = true;
+            if ((header.unitCode & 2) > 0 && (header.twlInternalFlags & 1) > 0 && Sistema.twl_flag != true)
+                this.btnImportiheader.Enabled = true;
         }
         private void ReadLanguage()
         {
@@ -64,6 +72,8 @@ namespace Tinke
             groupHeader.Text = xml.Element("S03").Value;
             groupBanner.Text = xml.Element("S04").Value;
             btnImage.Text = xml.Element("S05").Value;
+            btnImportAdata.Text = xml.Element("S2D").Value;
+            btnImportiheader.Text = xml.Element("S2E").Value;
             lblBanVer.Text = xml.Element("S06").Value;
             lblBanTitles.Text = xml.Element("S07").Value;
             comboBanTitles.Items[0] = xml.Element("S08").Value;
@@ -150,7 +160,32 @@ namespace Tinke
             BinaryReader br = new BinaryReader(File.OpenRead(tempBanner));
             br.BaseStream.Position = 0x20;
             banner.CRC16 = (ushort)CRC16.Calculate(br.ReadBytes(0x820));
+            banner.CRC162 = 0;
+            banner.CRC163 = 0;
+            banner.CRC16i = 0;
             banner.checkCRC = true;
+            if (this.banner.version == 2)
+            {
+                br.BaseStream.Position = 0x20;
+                banner.CRC162 = (ushort)CRC16.Calculate(br.ReadBytes(0x920));
+            }
+            if (this.banner.version == 3)
+            {
+                br.BaseStream.Position = 0x20;
+                banner.CRC162 = (ushort)CRC16.Calculate(br.ReadBytes(0x920));
+                br.BaseStream.Position = 0x20;
+                banner.CRC163 = (ushort)CRC16.Calculate(br.ReadBytes(0xA20));
+            }
+            if ((this.banner.version >> 8) >= 1)
+            {
+                br.BaseStream.Position = 0x20;
+                banner.CRC162 = (ushort)CRC16.Calculate(br.ReadBytes(0x920));
+                br.BaseStream.Position = 0x20;
+                banner.CRC163 = (ushort)CRC16.Calculate(br.ReadBytes(0xA20));
+                br.BaseStream.Position = 0x1240;
+                banner.CRC16i = (ushort)CRC16.Calculate(br.ReadBytes(0x1180));
+            }
+            
             br.Close();
             File.Delete(tempBanner);
 
@@ -175,12 +210,12 @@ namespace Tinke
         // Control events
         private void txtBanReserved_Leave(object sender, EventArgs e)
         {
-            banner.reserved = BitsConverter.StringToBytes(txtBanReserved.Text, 28);
+            banner.reserved = BitsConverter.StringToBytes(txtBanReserved.Text, 22);
             txtBanReserved.Text = BitConverter.ToString(banner.reserved);
         }
         private void txtReserved_Leave(object sender, EventArgs e)
         {
-            header.reserved = BitsConverter.StringToBytes(txtReserved.Text, 9);
+            header.reserved = BitsConverter.StringToBytes(txtReserved.Text, 7);
             txtReserved.Text = BitConverter.ToString(header.reserved);
         }
         private void txtReserved2_Leave(object sender, EventArgs e)
@@ -211,6 +246,12 @@ namespace Tinke
                 case 5:
                     banner.spanishTitle = txtTitles.Text;
                     break;
+                case 6:
+                    banner.chineseTitle = txtTitles.Text;
+                    break;
+                case 7:
+                    banner.koreanTitle = txtTitles.Text;
+                    break;
             }
         }
         private void comboBanTitles_SelectedIndexChanged(object sender, EventArgs e)
@@ -235,28 +276,37 @@ namespace Tinke
                 case 5:
                     txtTitles.Text = banner.spanishTitle;
                     break;
+                case 6:
+                    txtTitles.Text = banner.chineseTitle;
+                    break;
+                case 7:
+                    txtTitles.Text = banner.koreanTitle;
+                    break;
             }
         }
 
         private void btnImage_Click(object sender, EventArgs e)
         {
-            OpenFileDialog o = new OpenFileDialog();
-            o.CheckFileExists = true;
-            o.DefaultExt = "bmp";
-            o.Filter = "BitMaP (*.bmp)|*.bmp";
+            OpenFileDialog o = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "idat",
+                Filter = "Tinke icon data (*.idat)|*.idat"
+            };
             if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
                 {
+                    BinaryReader br = new BinaryReader(File.OpenRead(o.FileName));
+                    banner.tileData = br.ReadBytes(0x200);
+                    banner.palette = br.ReadBytes(0x20);
+                    br.Close();
                     //PluginInterface.NCGR tile = Imagen_NCGR.BitmapToTile(o.FileName, PluginInterface.TileOrder.Horizontal);
                     //if (tile.rahc.depth == ColorDepth.Depth8Bit)
                     //    throw new NotSupportedException(Tools.Helper.GetTranslation("EditRomInfo", "S26"));
-
                     //banner.tileData = Convertir.TilesToBytes(tile.rahc.tileData.tiles);
                     //banner.tileData = Tools.Helper.Bits4ToBits8(banner.tileData);
-
                     //// TODO: banner.palette = Convertir.ColorToBGR555(Imagen_NCLR.BitmapToPalette(o.FileName).pltt.palettes[0].colors);
-
                     //txtImage.BackColor = Color.LightGreen;
                 }
                 catch (Exception ex)
@@ -412,6 +462,112 @@ namespace Tinke
 
             ven.Text = xml.Element("S2A").Value;
             ven.Show();
+        }
+
+        private void btnImportAdata_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog o = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "adat",
+                Filter = "Tinke animation data(*.adat)|*.adat"
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                BinaryReader br = new BinaryReader(File.OpenRead(o.FileName));
+                banner.aniIconData = br.ReadBytes(0x1180);
+                br.Close();
+                byte[] zbyte = new byte[0x800];
+                banner.reservedDsi = zbyte;
+            }
+        }
+
+        private void btnImportiheader_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog o = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "ihdr",
+                Filter = "Tinke donor iheader (*.ihdr)|*.ihdr"
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                BinaryReader br = new BinaryReader(File.OpenRead(o.FileName));
+                char[] temp_gameCode = br.ReadChars(4);
+                if (Enumerable.SequenceEqual(temp_gameCode, header.gameCode) != true)
+                {
+                    MessageBox.Show(Tools.Helper.GetTranslation("Messages", "S2D"));
+                    br.Close();
+                    return;
+                }
+                header.global_mbk_setting = new byte[5][];
+                for (int i = 0; i < 5; i++) header.global_mbk_setting[i] = br.ReadBytes(4);
+                header.arm9_mbk_setting = new uint[3];
+                for (int i = 0; i < 3; i++) header.arm9_mbk_setting[i] = br.ReadUInt32();
+                header.arm7_mbk_setting = new uint[3];
+                for (int i = 0; i < 3; i++) header.arm7_mbk_setting[i] = br.ReadUInt32();
+                header.mbk9_wramcnt_setting = br.ReadUInt32();
+
+                header.region_flags = br.ReadUInt32();
+                header.access_control = br.ReadUInt32();
+                header.scfg_ext_mask = br.ReadUInt32();
+                header.appflags = br.ReadBytes(4);
+
+                header.dsi9_rom_offset = br.ReadUInt32();
+                header.offset_0x1C4 = br.ReadUInt32();
+                header.dsi9_ram_address = br.ReadUInt32();
+                header.dsi9_size = br.ReadUInt32();
+                header.dsi7_rom_offset = br.ReadUInt32();
+                header.offset_0x1D4 = br.ReadUInt32();
+                header.dsi7_ram_address = br.ReadUInt32();
+                header.dsi7_size = br.ReadUInt32();
+
+                header.digest_ntr_start = br.ReadUInt32();
+                header.digest_ntr_size = br.ReadUInt32();
+                header.digest_twl_start = br.ReadUInt32();
+                header.digest_twl_size = br.ReadUInt32();
+
+                header.sector_hashtable_start = br.ReadUInt32();
+                header.sector_hashtable_size = br.ReadUInt32();
+                header.block_hashtable_start = br.ReadUInt32();
+                header.block_hashtable_size = br.ReadUInt32();
+
+                header.digest_sector_size = br.ReadUInt32();
+                header.digest_block_sectorcount = br.ReadUInt32();
+                header.banner_size = br.ReadUInt32();
+                header.offset_0x20C = br.ReadUInt32();
+
+                header.total_rom_size = br.ReadUInt32();
+                header.offset_0x214 = br.ReadUInt32();
+                header.offset_0x218 = br.ReadUInt32();
+                header.offset_0x21C = br.ReadUInt32();
+
+                header.modcrypt1_start = br.ReadUInt32();
+                header.modcrypt1_size = br.ReadUInt32();
+                header.modcrypt2_start = br.ReadUInt32();
+                header.modcrypt2_size = br.ReadUInt32();
+
+                header.tid_low = br.ReadUInt32();
+                header.tid_high = br.ReadUInt32();
+                header.public_sav_size = br.ReadUInt32();
+                header.private_sav_size = br.ReadUInt32();
+
+                header.reserved5 = br.ReadBytes(0xB0);
+                header.age_ratings = br.ReadBytes(0x10);
+                header.hmac_arm9 = br.ReadBytes(20);
+                header.hmac_arm7 = br.ReadBytes(20);
+                header.hmac_digest_master = br.ReadBytes(20);
+                header.hmac_icon_title = br.ReadBytes(20);
+                header.hmac_arm9i = br.ReadBytes(20);
+                header.hmac_arm7i = br.ReadBytes(20);
+                header.reserved6 = br.ReadBytes(40);
+                header.hmac_arm9_no_secure = br.ReadBytes(20);
+                header.reserved7 = br.ReadBytes(0xA4C);
+                header.debug_args = br.ReadBytes(0x180);
+                header.rsa_signature = br.ReadBytes(0x80);
+                br.Close();
+                header.trimmedRom = false;
+            }
         }
     }
 }

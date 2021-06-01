@@ -177,6 +177,10 @@ namespace Tinke
             "S38"}, -1);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RomInfo));
             this.groupBanner = new System.Windows.Forms.GroupBox();
+            this.btnDumpiheader = new System.Windows.Forms.Button();
+            this.btnDumpAdata = new System.Windows.Forms.Button();
+            this.btnDumpicondata = new System.Windows.Forms.Button();
+            this.btnEdit = new System.Windows.Forms.Button();
             this.checkTrans = new System.Windows.Forms.CheckBox();
             this.lblGameTitle = new System.Windows.Forms.Label();
             this.btnBannerGuardar = new System.Windows.Forms.Button();
@@ -193,7 +197,6 @@ namespace Tinke
             this.columnPosicion = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnCampo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnValor = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.btnEdit = new System.Windows.Forms.Button();
             this.groupBanner.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picIcon)).BeginInit();
             this.SuspendLayout();
@@ -201,6 +204,10 @@ namespace Tinke
             // groupBanner
             // 
             this.groupBanner.BackColor = System.Drawing.Color.Transparent;
+            this.groupBanner.Controls.Add(this.btnDumpiheader);
+            this.groupBanner.Controls.Add(this.btnDumpAdata);
+            this.groupBanner.Controls.Add(this.btnDumpicondata);
+            this.groupBanner.Controls.Add(this.btnEdit);
             this.groupBanner.Controls.Add(this.checkTrans);
             this.groupBanner.Controls.Add(this.lblGameTitle);
             this.groupBanner.Controls.Add(this.btnBannerGuardar);
@@ -214,19 +221,77 @@ namespace Tinke
             this.groupBanner.Controls.Add(this.txtBannerTitle);
             this.groupBanner.Controls.Add(this.picIcon);
             this.groupBanner.Dock = System.Windows.Forms.DockStyle.Right;
-            this.groupBanner.Location = new System.Drawing.Point(494, 0);
+            this.groupBanner.Location = new System.Drawing.Point(496, 0);
             this.groupBanner.Name = "groupBanner";
-            this.groupBanner.Size = new System.Drawing.Size(200, 472);
+            this.groupBanner.Size = new System.Drawing.Size(200, 476);
             this.groupBanner.TabIndex = 7;
             this.groupBanner.TabStop = false;
             this.groupBanner.Text = "S02";
             // 
+            // btnDumpiheader
+            // 
+            this.btnDumpiheader.Enabled = false;
+            this.btnDumpiheader.Image = global::Tinke.Properties.Resources.package;
+            this.btnDumpiheader.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpiheader.Location = new System.Drawing.Point(9, 413);
+            this.btnDumpiheader.Name = "btnDumpiheader";
+            this.btnDumpiheader.Size = new System.Drawing.Size(184, 28);
+            this.btnDumpiheader.TabIndex = 9;
+            this.btnDumpiheader.Text = "S40";
+            this.btnDumpiheader.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpiheader.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnDumpiheader.UseVisualStyleBackColor = true;
+            this.btnDumpiheader.Click += new System.EventHandler(this.btnDumpiheader_Click);
+            // 
+            // btnDumpAdata
+            // 
+            this.btnDumpAdata.Enabled = false;
+            this.btnDumpAdata.Image = global::Tinke.Properties.Resources.picture_go;
+            this.btnDumpAdata.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpAdata.Location = new System.Drawing.Point(9, 379);
+            this.btnDumpAdata.Name = "btnDumpAdata";
+            this.btnDumpAdata.Size = new System.Drawing.Size(184, 28);
+            this.btnDumpAdata.TabIndex = 15;
+            this.btnDumpAdata.Text = "S3F";
+            this.btnDumpAdata.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpAdata.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnDumpAdata.UseVisualStyleBackColor = true;
+            this.btnDumpAdata.Click += new System.EventHandler(this.btnDumpAdata_Click);
+            // 
+            // btnDumpicondata
+            // 
+            this.btnDumpicondata.Image = global::Tinke.Properties.Resources.disk;
+            this.btnDumpicondata.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpicondata.Location = new System.Drawing.Point(9, 345);
+            this.btnDumpicondata.Name = "btnDumpicondata";
+            this.btnDumpicondata.Size = new System.Drawing.Size(184, 28);
+            this.btnDumpicondata.TabIndex = 14;
+            this.btnDumpicondata.Text = "S3E";
+            this.btnDumpicondata.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDumpicondata.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnDumpicondata.UseVisualStyleBackColor = true;
+            this.btnDumpicondata.Click += new System.EventHandler(this.btnDumpicondata_Click);
+            // 
+            // btnEdit
+            // 
+            this.btnEdit.Image = global::Tinke.Properties.Resources.pencil;
+            this.btnEdit.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnEdit.Location = new System.Drawing.Point(9, 447);
+            this.btnEdit.Name = "btnEdit";
+            this.btnEdit.Size = new System.Drawing.Size(184, 28);
+            this.btnEdit.TabIndex = 8;
+            this.btnEdit.Text = "S3B";
+            this.btnEdit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnEdit.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnEdit.UseVisualStyleBackColor = true;
+            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
             // checkTrans
             // 
             this.checkTrans.AutoSize = true;
-            this.checkTrans.Location = new System.Drawing.Point(66, 58);
+            this.checkTrans.Location = new System.Drawing.Point(66, 54);
             this.checkTrans.Name = "checkTrans";
-            this.checkTrans.Size = new System.Drawing.Size(46, 17);
+            this.checkTrans.Size = new System.Drawing.Size(42, 16);
             this.checkTrans.TabIndex = 13;
             this.checkTrans.Text = "S3A";
             this.checkTrans.UseVisualStyleBackColor = true;
@@ -235,18 +300,18 @@ namespace Tinke
             // lblGameTitle
             // 
             this.lblGameTitle.AutoSize = true;
-            this.lblGameTitle.Location = new System.Drawing.Point(7, 173);
+            this.lblGameTitle.Location = new System.Drawing.Point(8, 159);
             this.lblGameTitle.Name = "lblGameTitle";
-            this.lblGameTitle.Size = new System.Drawing.Size(26, 13);
+            this.lblGameTitle.Size = new System.Drawing.Size(23, 12);
             this.lblGameTitle.TabIndex = 12;
-            this.lblGameTitle.Text = "S0F";
+            this.lblGameTitle.Text = "S41";
             // 
             // btnBannerGuardar
             // 
             this.btnBannerGuardar.ImageKey = "(none)";
-            this.btnBannerGuardar.Location = new System.Drawing.Point(65, 19);
+            this.btnBannerGuardar.Location = new System.Drawing.Point(65, 18);
             this.btnBannerGuardar.Name = "btnBannerGuardar";
-            this.btnBannerGuardar.Size = new System.Drawing.Size(127, 32);
+            this.btnBannerGuardar.Size = new System.Drawing.Size(127, 30);
             this.btnBannerGuardar.TabIndex = 11;
             this.btnBannerGuardar.Text = "S03";
             this.btnBannerGuardar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -255,52 +320,52 @@ namespace Tinke
             // 
             // txtBannerReserved
             // 
-            this.txtBannerReserved.Location = new System.Drawing.Point(66, 140);
+            this.txtBannerReserved.Location = new System.Drawing.Point(66, 129);
             this.txtBannerReserved.Name = "txtBannerReserved";
             this.txtBannerReserved.ReadOnly = true;
-            this.txtBannerReserved.Size = new System.Drawing.Size(126, 20);
+            this.txtBannerReserved.Size = new System.Drawing.Size(126, 21);
             this.txtBannerReserved.TabIndex = 10;
             // 
             // txtBannerCRC
             // 
-            this.txtBannerCRC.Location = new System.Drawing.Point(65, 114);
+            this.txtBannerCRC.Location = new System.Drawing.Point(66, 105);
             this.txtBannerCRC.Name = "txtBannerCRC";
             this.txtBannerCRC.ReadOnly = true;
-            this.txtBannerCRC.Size = new System.Drawing.Size(126, 20);
+            this.txtBannerCRC.Size = new System.Drawing.Size(126, 21);
             this.txtBannerCRC.TabIndex = 9;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 143);
+            this.label4.Location = new System.Drawing.Point(6, 132);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(26, 13);
+            this.label4.Size = new System.Drawing.Size(23, 12);
             this.label4.TabIndex = 8;
             this.label4.Text = "S05";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 117);
+            this.label3.Location = new System.Drawing.Point(7, 108);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 13);
+            this.label3.Size = new System.Drawing.Size(41, 12);
             this.label3.TabIndex = 7;
             this.label3.Text = "CRC16:";
             // 
             // txtBannerVer
             // 
-            this.txtBannerVer.Location = new System.Drawing.Point(66, 88);
+            this.txtBannerVer.Location = new System.Drawing.Point(66, 81);
             this.txtBannerVer.Name = "txtBannerVer";
             this.txtBannerVer.ReadOnly = true;
-            this.txtBannerVer.Size = new System.Drawing.Size(126, 20);
+            this.txtBannerVer.Size = new System.Drawing.Size(126, 21);
             this.txtBannerVer.TabIndex = 6;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 91);
+            this.label2.Location = new System.Drawing.Point(6, 84);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 13);
+            this.label2.Size = new System.Drawing.Size(23, 12);
             this.label2.TabIndex = 5;
             this.label2.Text = "S04";
             // 
@@ -316,28 +381,28 @@ namespace Tinke
             "S09",
             "S0A",
             "S0B"});
-            this.comboBannerLang.Location = new System.Drawing.Point(10, 189);
+            this.comboBannerLang.Location = new System.Drawing.Point(10, 174);
             this.comboBannerLang.Name = "comboBannerLang";
-            this.comboBannerLang.Size = new System.Drawing.Size(181, 21);
+            this.comboBannerLang.Size = new System.Drawing.Size(181, 20);
             this.comboBannerLang.TabIndex = 4;
             this.comboBannerLang.SelectedIndexChanged += new System.EventHandler(this.comboBannerLang_SelectedIndexChanged);
             // 
             // txtBannerTitle
             // 
             this.txtBannerTitle.BackColor = System.Drawing.SystemColors.Control;
-            this.txtBannerTitle.Location = new System.Drawing.Point(10, 216);
+            this.txtBannerTitle.Location = new System.Drawing.Point(10, 199);
             this.txtBannerTitle.Multiline = true;
             this.txtBannerTitle.Name = "txtBannerTitle";
             this.txtBannerTitle.ReadOnly = true;
-            this.txtBannerTitle.Size = new System.Drawing.Size(182, 85);
+            this.txtBannerTitle.Size = new System.Drawing.Size(182, 140);
             this.txtBannerTitle.TabIndex = 3;
             // 
             // picIcon
             // 
             this.picIcon.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.picIcon.Location = new System.Drawing.Point(9, 19);
+            this.picIcon.Location = new System.Drawing.Point(9, 18);
             this.picIcon.Name = "picIcon";
-            this.picIcon.Size = new System.Drawing.Size(32, 32);
+            this.picIcon.Size = new System.Drawing.Size(32, 30);
             this.picIcon.TabIndex = 0;
             this.picIcon.TabStop = false;
             // 
@@ -399,7 +464,7 @@ namespace Tinke
             this.listInfo.LabelEdit = true;
             this.listInfo.Location = new System.Drawing.Point(0, 0);
             this.listInfo.Name = "listInfo";
-            this.listInfo.Size = new System.Drawing.Size(494, 472);
+            this.listInfo.Size = new System.Drawing.Size(494, 476);
             this.listInfo.TabIndex = 6;
             this.listInfo.UseCompatibleStateImageBehavior = false;
             this.listInfo.View = System.Windows.Forms.View.Details;
@@ -418,34 +483,22 @@ namespace Tinke
             this.columnValor.Text = "S0E";
             this.columnValor.Width = 214;
             // 
-            // btnEdit
-            // 
-            this.btnEdit.Image = global::Tinke.Properties.Resources.pencil;
-            this.btnEdit.Location = new System.Drawing.Point(500, 313);
-            this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(90, 30);
-            this.btnEdit.TabIndex = 8;
-            this.btnEdit.Text = "S3B";
-            this.btnEdit.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnEdit.UseVisualStyleBackColor = true;
-            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
-            // 
             // RomInfo
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.ClientSize = new System.Drawing.Size(694, 472);
-            this.Controls.Add(this.btnEdit);
+            this.ClientSize = new System.Drawing.Size(696, 476);
             this.Controls.Add(this.groupBanner);
             this.Controls.Add(this.listInfo);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MinimumSize = new System.Drawing.Size(710, 380);
+            this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(710, 354);
             this.Name = "RomInfo";
             this.ShowInTaskbar = false;
             this.Text = "S01";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RomInfo_FormClosing);
-            this.Resize += new System.EventHandler(this.RomInfo_Resize);
             this.groupBanner.ResumeLayout(false);
             this.groupBanner.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picIcon)).EndInit();
@@ -472,6 +525,9 @@ namespace Tinke
         private System.Windows.Forms.ColumnHeader columnValor;
         private System.Windows.Forms.Label lblGameTitle;
         private System.Windows.Forms.CheckBox checkTrans;
+        private System.Windows.Forms.Button btnDumpicondata;
+        private System.Windows.Forms.Button btnDumpAdata;
         private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.Button btnDumpiheader;
     }
 }
